@@ -138,3 +138,40 @@ export type RentReview = {
   notes: string | null;
   created_at: string;
 };
+
+export type PropertyTask = {
+  id: string;
+  agency_id: string;
+  property_id: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+  status: 'pending' | 'in_progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+  assigned_to: string | null;
+  created_at: string;
+};
+
+export type PropertyInspection = {
+  id: string;
+  agency_id: string;
+  property_id: string;
+  inspection_date: string;
+  type: 'routine' | 'entry' | 'exit' | 'special';
+  status: 'scheduled' | 'completed' | 'cancelled';
+  inspector: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type PropertyForm = {
+  id: string;
+  agency_id: string;
+  property_id: string;
+  form_type: 'lease_agreement' | 'renewal_notice' | 'entry_notice' | 'exit_report' | 'bond_form' | 'general';
+  title: string;
+  status: 'draft' | 'sent' | 'signed' | 'filed' | 'expired';
+  sent_date: string | null;
+  signed_date: string | null;
+  created_at: string;
+};

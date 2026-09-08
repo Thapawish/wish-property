@@ -6,6 +6,7 @@ import { useToast } from '@/components/Toast';
 import { SearchToolbar, uniqueSuburbs, type FilterOption } from '@/components/SearchToolbar';
 import { exportToCsv } from '@/lib/csv';
 import { Badge, EmptyState, Modal, PageHeader, Spinner, statusColor } from '@/components/ui';
+import { PropertyDetail } from '@/components/PropertyDetail';
 import type { Property, Contact } from '@/lib/supabase';
 
 export function PropertiesPage() {
@@ -19,6 +20,7 @@ export function PropertiesPage() {
   const [suburbFilter, setSuburbFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   const { toast } = useToast();
 
@@ -74,6 +76,16 @@ export function PropertiesPage() {
 
   function clearFilters() {
     setSearch(''); setStatusFilter('all'); setSuburbFilter('all');
+  }
+
+  if (selectedProperty) {
+    return (
+      <PropertyDetail
+        property={selectedProperty}
+        landlords={landlords}
+        onBack={() => { setSelectedProperty(null); loadData(); }}
+      />
+    );
   }
 
   return (
@@ -169,7 +181,7 @@ export function PropertiesPage() {
           {filtered.map((prop) => {
             const landlord = landlords.find((l) => l.id === prop.landlord_id);
             return (
-              <div key={prop.id} className="bg-slate-900 rounded-2xl border border-slate-800 p-5 hover:border-slate-700 transition group">
+              <div key={prop.id} onClick={() => setSelectedProperty(prop)} className="bg-slate-900 rounded-2xl border border-slate-800 p-5 hover:border-teal-600 transition group cursor-pointer">
                 <div className="flex items-start justify-between mb-3">
                   <Badge color={statusColor(prop.status)}>{prop.status}</Badge>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
