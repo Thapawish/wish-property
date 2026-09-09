@@ -11,13 +11,15 @@ import {
   Menu,
   X,
   Wrench,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-export type PageKey = 'dashboard' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance';
+export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance';
 
 const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: string }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, shortLabel: 'Home' },
+  { key: 'action-center', label: 'Action Centre', icon: Zap, shortLabel: 'Actions' },
   { key: 'properties', label: 'Properties', icon: Home, shortLabel: 'Properties' },
   { key: 'leases', label: 'Leases', icon: FileText, shortLabel: 'Leases' },
   { key: 'contacts', label: 'Contacts', icon: Users, shortLabel: 'Contacts' },
@@ -28,8 +30,8 @@ const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: s
 
 const MOBILE_NAV: { key: PageKey; icon: typeof Home; shortLabel: string }[] = [
   { key: 'dashboard', icon: LayoutDashboard, shortLabel: 'Home' },
+  { key: 'action-center', icon: Zap, shortLabel: 'Actions' },
   { key: 'properties', icon: Home, shortLabel: 'Properties' },
-  { key: 'leases', icon: FileText, shortLabel: 'Leases' },
   { key: 'payments', icon: DollarSign, shortLabel: 'Payments' },
 ];
 

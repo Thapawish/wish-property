@@ -13,6 +13,7 @@ import { ContactsPage } from '@/pages/ContactsPage';
 import { PaymentsPage } from '@/pages/PaymentsPage';
 import { RentReviewsPage } from '@/pages/RentReviewsPage';
 import { MaintenancePage } from '@/pages/MaintenancePage';
+import { ActionCenterPage } from '@/pages/ActionCenterPage';
 import { Spinner } from '@/components/ui';
 
 function OfflineBanner() {
@@ -77,6 +78,7 @@ function AppContent() {
       <OfflineBanner />
       <AppShell current={page} onNavigate={setPage}>
         {page === 'dashboard' && <DashboardPage />}
+        {page === 'action-center' && <ActionCenterPage />}
         {page === 'properties' && <PropertiesPage />}
         {page === 'leases' && <LeasesPage />}
         {page === 'contacts' && <ContactsPage />}
