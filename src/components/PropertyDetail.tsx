@@ -34,10 +34,11 @@ import type {
   PropertyForm,
 } from '@/lib/supabase';
 
-type TabKey = 'overview' | 'lease-tasks' | 'transactions' | 'inspections' | 'reports' | 'forms';
+type TabKey = 'overview' | 'lease' | 'lease-tasks' | 'transactions' | 'inspections' | 'reports' | 'forms';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'overview', label: 'Overview' },
+  { key: 'lease', label: 'Lease' },
   { key: 'lease-tasks', label: 'Lease Tasks' },
   { key: 'transactions', label: 'Transactions' },
   { key: 'inspections', label: 'Inspections' },
@@ -45,8 +46,8 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'forms', label: 'Forms' },
 ];
 
-const inputCls = 'w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent';
-const labelCls = 'block text-sm font-medium text-slate-300 mb-1.5';
+const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent';
+const labelCls = 'block text-sm font-medium text-slate-700 mb-1.5';
 
 export function PropertyDetail({
   property,
@@ -160,21 +161,21 @@ export function PropertyDetail({
     <div>
       {/* Header */}
       <div className="mb-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium mb-4 transition">
+        <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm font-medium mb-4 transition">
           <ArrowLeft className="w-4 h-4" />
           Back to Properties
         </button>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-xl font-bold text-white">{property.address}</h2>
+              <h2 className="text-xl font-bold text-slate-800">{property.address}</h2>
               <Badge color={statusColor(property.status)}>{property.status}</Badge>
             </div>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-500 text-sm">
               {[property.suburb, property.state, property.postcode].filter(Boolean).join(', ') || 'No location set'}
             </p>
           </div>
-          <div className="flex items-center gap-4 text-slate-400 text-sm">
+          <div className="flex items-center gap-4 text-slate-500 text-sm">
             <span className="flex items-center gap-1.5"><Bed className="w-4 h-4" /> {property.bedrooms}</span>
             <span className="flex items-center gap-1.5"><Bath className="w-4 h-4" /> {property.bathrooms}</span>
             <span className="flex items-center gap-1.5"><Car className="w-4 h-4" /> {property.parking}</span>
@@ -184,7 +185,7 @@ export function PropertyDetail({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-slate-800 mb-6 overflow-x-auto">
+      <div className="border-b border-slate-200 mb-6 overflow-x-auto">
         <div className="flex gap-1 min-w-max">
           {TABS.map((tab) => (
             <button
@@ -192,8 +193,8 @@ export function PropertyDetail({
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition whitespace-nowrap ${
                 activeTab === tab.key
-                  ? 'border-teal-500 text-teal-400'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
               }`}
             >
               {tab.label}
@@ -207,6 +208,7 @@ export function PropertyDetail({
       ) : (
         <>
           {activeTab === 'overview' && <OverviewTab property={property} landlord={landlord} lease={lease} tenant={tenant} features={features} payments={payments} />}
+          {activeTab === 'lease' && <LeaseTab lease={lease} tenant={tenant} payments={payments} />}
           {activeTab === 'lease-tasks' && (
             <LeaseTasksTab
               tasks={tasks}
@@ -305,9 +307,9 @@ function OverviewTab({
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
-            <p className="text-slate-400 text-xs mb-1">{s.label}</p>
-            <p className="text-white text-lg font-bold">{s.value}</p>
+          <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4">
+            <p className="text-slate-500 text-xs mb-1">{s.label}</p>
+            <p className="text-slate-800 text-lg font-bold">{s.value}</p>
             {s.sub && <p className="text-slate-500 text-xs capitalize">{s.sub}</p>}
           </div>
         ))}
@@ -315,23 +317,23 @@ function OverviewTab({
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Property Details */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Home className="w-5 h-5 text-teal-400" />
-            <h3 className="text-white font-semibold">Property Details</h3>
+            <Home className="w-5 h-5 text-blue-600" />
+            <h3 className="text-slate-800 font-semibold">Property Details</h3>
           </div>
           <dl className="space-y-2.5 text-sm">
-            <div className="flex justify-between"><dt className="text-slate-500">Type</dt><dd className="text-slate-200 capitalize">{property.property_type}</dd></div>
-            <div className="flex justify-between"><dt className="text-slate-500">Category</dt><dd className="text-slate-200 capitalize">{property.property_category ?? '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-slate-500">Aspect</dt><dd className="text-slate-200 capitalize">{(property.property_aspect ?? '—').replace('_', '-')}</dd></div>
-            <div className="flex justify-between"><dt className="text-slate-500">Ownership</dt><dd className="text-slate-200 capitalize">{property.ownership_type ?? '—'}</dd></div>
-            <div className="flex justify-between"><dt className="text-slate-500">Split Payments</dt><dd className="text-slate-200">{property.split_payments ? 'Yes' : 'No'}</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-500">Type</dt><dd className="text-slate-700 capitalize">{property.property_type}</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-500">Category</dt><dd className="text-slate-700 capitalize">{property.property_category ?? '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-500">Aspect</dt><dd className="text-slate-700 capitalize">{(property.property_aspect ?? '—').replace('_', '-')}</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-500">Ownership</dt><dd className="text-slate-700 capitalize">{property.ownership_type ?? '—'}</dd></div>
+            <div className="flex justify-between"><dt className="text-slate-500">Split Payments</dt><dd className="text-slate-700">{property.split_payments ? 'Yes' : 'No'}</dd></div>
           </dl>
-          <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="mt-4 pt-4 border-t border-slate-200">
             <p className="text-slate-500 text-xs mb-2">Features</p>
             <div className="flex flex-wrap gap-1.5">
               {features.map((f) => (
-                <span key={f.label} className={`px-2 py-0.5 rounded-full text-xs font-medium ${f.value ? 'bg-teal-500/10 text-teal-400' : 'bg-slate-800 text-slate-600'}`}>
+                <span key={f.label} className={`px-2 py-0.5 rounded-full text-xs font-medium ${f.value ? 'bg-blue-600/10 text-blue-600' : 'bg-slate-50 text-slate-600'}`}>
                   {f.label}
                 </span>
               ))}
@@ -340,26 +342,26 @@ function OverviewTab({
         </div>
 
         {/* Lease & Tenant */}
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-teal-400" />
-            <h3 className="text-white font-semibold">Lease & Tenant</h3>
+            <FileText className="w-5 h-5 text-blue-600" />
+            <h3 className="text-slate-800 font-semibold">Lease & Tenant</h3>
           </div>
           {lease ? (
             <dl className="space-y-2.5 text-sm">
-              <div className="flex justify-between"><dt className="text-slate-500">Tenant</dt><dd className="text-slate-200">{tenant ? `${tenant.first_name} ${tenant.last_name}` : '—'}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Term</dt><dd className="text-slate-200">{formatDate(lease.start_date)} → {formatDate(lease.end_date)}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Tenant</dt><dd className="text-slate-700">{tenant ? `${tenant.first_name} ${tenant.last_name}` : '—'}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Term</dt><dd className="text-slate-700">{formatDate(lease.start_date)} → {formatDate(lease.end_date)}</dd></div>
               <div className="flex justify-between"><dt className="text-slate-500">Status</dt><dd><Badge color={statusColor(lease.status)}>{lease.status}</Badge></dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Periodic</dt><dd className="text-slate-200">{lease.is_periodic ? 'Yes' : 'No'}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Paid Until</dt><dd className="text-slate-200">{formatDate(lease.paid_until)}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Periodic</dt><dd className="text-slate-700">{lease.is_periodic ? 'Yes' : 'No'}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Paid Until</dt><dd className="text-slate-700">{formatDate(lease.paid_until)}</dd></div>
             </dl>
           ) : (
             <p className="text-slate-500 text-sm py-4">No active lease for this property.</p>
           )}
           {landlord && (
-            <div className="mt-4 pt-4 border-t border-slate-800">
+            <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-slate-500 text-xs mb-1">Landlord</p>
-              <p className="text-slate-200 text-sm">{landlord.first_name} {landlord.last_name}</p>
+              <p className="text-slate-700 text-sm">{landlord.first_name} {landlord.last_name}</p>
               {landlord.email && <p className="text-slate-500 text-xs">{landlord.email}</p>}
               {landlord.phone && <p className="text-slate-500 text-xs">{landlord.phone}</p>}
             </div>
@@ -368,10 +370,10 @@ function OverviewTab({
       </div>
 
       {/* Management Fees */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-teal-400" />
-          <h3 className="text-white font-semibold">Management Fees & Settings</h3>
+          <TrendingUp className="w-5 h-5 text-blue-600" />
+          <h3 className="text-slate-800 font-semibold">Management Fees & Settings</h3>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
           <FeeItem label="Mgmt Fee %" value={property.management_fee_percent != null ? `${property.management_fee_percent}%` : '—'} />
@@ -390,7 +392,7 @@ function FeeItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-slate-500 text-xs">{label}</p>
-      <p className="text-slate-200 font-medium">{value}</p>
+      <p className="text-slate-700 font-medium">{value}</p>
     </div>
   );
 }
@@ -417,8 +419,8 @@ function LeaseTasksTab({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-semibold">Lease Tasks</h3>
-        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium rounded-lg transition">
+        <h3 className="text-slate-800 font-semibold">Lease Tasks</h3>
+        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-slate-800 text-sm font-medium rounded-lg transition">
           <Plus className="w-4 h-4" /> Add Task
         </button>
       </div>
@@ -427,14 +429,14 @@ function LeaseTasksTab({
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
-            <div key={task.id} className="bg-slate-900 rounded-xl border border-slate-800 p-4 flex items-start gap-3 group">
+            <div key={task.id} className="bg-white rounded-xl border border-slate-200 p-4 flex items-start gap-3 group">
               <button
                 onClick={() => onToggle(task)}
                 className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition ${
-                  task.status === 'completed' ? 'bg-teal-500 border-teal-500' : 'border-slate-600 hover:border-teal-500'
+                  task.status === 'completed' ? 'bg-blue-600 border-blue-600' : 'border-slate-600 hover:border-blue-600'
                 }`}
               >
-                {task.status === 'completed' && <Check className="w-3 h-3 text-white" />}
+                {task.status === 'completed' && <Check className="w-3 h-3 text-slate-800" />}
               </button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -454,8 +456,8 @@ function LeaseTasksTab({
               </div>
               {isAdmin && (
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                  <button onClick={() => onEdit(task)} className="p-1.5 text-slate-500 hover:text-teal-400 rounded-lg hover:bg-slate-800 transition"><Pencil className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => onDelete(task.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => onEdit(task)} className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition"><Pencil className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => onDelete(task.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               )}
             </div>
@@ -541,8 +543,8 @@ function TaskForm({
         </div>
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition">Cancel</button>
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-slate-800 font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-50 hover:bg-slate-700 text-slate-700 font-medium rounded-lg transition">Cancel</button>
         </div>
       </form>
     </Modal>
@@ -559,47 +561,47 @@ function TransactionsTab({ payments, onMarkPaid }: { payments: Payment[]; onMark
   return (
     <div>
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
           <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-2"><Check className="w-4 h-4 text-emerald-400" /></div>
-          <p className="text-slate-400 text-xs">Collected</p>
-          <p className="text-white text-lg font-bold">{formatCurrency(totalPaid)}</p>
+          <p className="text-slate-500 text-xs">Collected</p>
+          <p className="text-slate-800 text-lg font-bold">{formatCurrency(totalPaid)}</p>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
           <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center mb-2"><Clock className="w-4 h-4 text-amber-400" /></div>
-          <p className="text-slate-400 text-xs">Pending</p>
-          <p className="text-white text-lg font-bold">{formatCurrency(totalPending)}</p>
+          <p className="text-slate-500 text-xs">Pending</p>
+          <p className="text-slate-800 text-lg font-bold">{formatCurrency(totalPending)}</p>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
           <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center mb-2"><AlertCircle className="w-4 h-4 text-red-400" /></div>
-          <p className="text-slate-400 text-xs">Overdue</p>
-          <p className="text-white text-lg font-bold">{formatCurrency(totalOverdue)}</p>
+          <p className="text-slate-500 text-xs">Overdue</p>
+          <p className="text-slate-800 text-lg font-bold">{formatCurrency(totalOverdue)}</p>
         </div>
       </div>
 
       {payments.length === 0 ? (
         <EmptyState icon={<TrendingUp className="w-7 h-7" />} title="No transactions" description="Payments for this property's lease will appear here." />
       ) : (
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-800 text-left">
-                  <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Due Date</th>
-                  <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Amount</th>
-                  <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Paid</th>
-                  <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Method</th>
+                <tr className="border-b border-slate-200 text-left">
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Due Date</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Amount</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Paid</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Method</th>
                   <th className="px-5 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {payments.map((p) => (
-                  <tr key={p.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition group">
-                    <td className="px-5 py-4 text-slate-300 text-sm">{formatDate(p.due_date)}</td>
+                  <tr key={p.id} className="border-b border-slate-200/50 hover:bg-slate-50/30 transition group">
+                    <td className="px-5 py-4 text-slate-700 text-sm">{formatDate(p.due_date)}</td>
                     <td className="px-5 py-4 text-slate-200 text-sm font-medium">{formatCurrency(Number(p.amount))}</td>
                     <td className="px-5 py-4"><Badge color={statusColor(p.status)}>{p.status}</Badge></td>
-                    <td className="px-5 py-4 text-slate-400 text-sm">{formatDate(p.paid_date)}</td>
-                    <td className="px-5 py-4 text-slate-400 text-sm">{p.method ?? '—'}</td>
+                    <td className="px-5 py-4 text-slate-500 text-sm">{formatDate(p.paid_date)}</td>
+                    <td className="px-5 py-4 text-slate-500 text-sm">{p.method ?? '—'}</td>
                     <td className="px-5 py-4 text-right">
                       {p.status !== 'paid' && (
                         <button onClick={() => onMarkPaid(p)} className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg transition opacity-0 group-hover:opacity-100">Mark Paid</button>
@@ -634,8 +636,8 @@ function InspectionsTab({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-semibold">Inspections</h3>
-        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium rounded-lg transition">
+        <h3 className="text-slate-800 font-semibold">Inspections</h3>
+        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-slate-800 text-sm font-medium rounded-lg transition">
           <Plus className="w-4 h-4" /> Schedule Inspection
         </button>
       </div>
@@ -644,7 +646,7 @@ function InspectionsTab({
       ) : (
         <div className="space-y-3">
           {inspections.map((insp) => (
-            <div key={insp.id} className="bg-slate-900 rounded-xl border border-slate-800 p-4 group">
+            <div key={insp.id} className="bg-white rounded-xl border border-slate-200 p-4 group">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -655,12 +657,12 @@ function InspectionsTab({
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(insp.inspection_date)}</span>
                     {insp.inspector && <span>Inspector: {insp.inspector}</span>}
                   </div>
-                  {insp.notes && <p className="text-slate-400 text-sm mt-2">{insp.notes}</p>}
+                  {insp.notes && <p className="text-slate-500 text-sm mt-2">{insp.notes}</p>}
                 </div>
                 {isAdmin && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={() => onEdit(insp)} className="p-1.5 text-slate-500 hover:text-teal-400 rounded-lg hover:bg-slate-800 transition"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => onDelete(insp.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onEdit(insp)} className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onDelete(insp.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
               </div>
@@ -754,8 +756,8 @@ function InspectionForm({
         </div>
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition">Cancel</button>
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-slate-800 font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-50 hover:bg-slate-700 text-slate-700 font-medium rounded-lg transition">Cancel</button>
         </div>
       </form>
     </Modal>
@@ -823,38 +825,38 @@ function ReportsTab({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
-          <p className="text-slate-400 text-xs">Lease Status</p>
-          <p className="text-white text-lg font-bold capitalize">{lease?.status ?? 'None'}</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs">Lease Status</p>
+          <p className="text-slate-800 text-lg font-bold capitalize">{lease?.status ?? 'None'}</p>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
-          <p className="text-slate-400 text-xs">Transactions</p>
-          <p className="text-white text-lg font-bold">{payments.length}</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs">Transactions</p>
+          <p className="text-slate-800 text-lg font-bold">{payments.length}</p>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
-          <p className="text-slate-400 text-xs">Tasks Completed</p>
-          <p className="text-white text-lg font-bold">{completedTasks}/{tasks.length}</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs">Tasks Completed</p>
+          <p className="text-slate-800 text-lg font-bold">{completedTasks}/{tasks.length}</p>
         </div>
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4">
-          <p className="text-slate-400 text-xs">Inspections</p>
-          <p className="text-white text-lg font-bold">{inspections.length}</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs">Inspections</p>
+          <p className="text-slate-800 text-lg font-bold">{inspections.length}</p>
         </div>
       </div>
 
       <div>
-        <h3 className="text-white font-semibold mb-4">Export Reports</h3>
+        <h3 className="text-slate-800 font-semibold mb-4">Export Reports</h3>
         <div className="grid sm:grid-cols-3 gap-4">
           {reports.map((r) => (
-            <div key={r.label} className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+            <div key={r.label} className="bg-white rounded-2xl border border-slate-200 p-5">
               <div className="flex items-center gap-2 mb-2">
-                <FileText className="w-5 h-5 text-teal-400" />
-                <h4 className="text-white font-medium text-sm">{r.label}</h4>
+                <FileText className="w-5 h-5 text-blue-600" />
+                <h4 className="text-slate-800 font-medium text-sm">{r.label}</h4>
               </div>
               <p className="text-slate-500 text-xs mb-3">{r.desc} — {r.count} records</p>
               <button
                 onClick={r.onExport}
                 disabled={r.count === 0}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 text-xs font-medium rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-700 disabled:opacity-50 text-slate-200 text-xs font-medium rounded-lg transition"
               >
                 <Download className="w-3.5 h-3.5" /> Export CSV
               </button>
@@ -864,12 +866,12 @@ function ReportsTab({
       </div>
 
       {lease && rentReviews.length > 0 && (
-        <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5">
-          <h3 className="text-white font-semibold mb-4">Recent Rent Reviews</h3>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <h3 className="text-slate-800 font-semibold mb-4">Recent Rent Reviews</h3>
           <div className="space-y-2">
             {rentReviews.slice(0, 5).map((r) => (
-              <div key={r.id} className="flex items-center justify-between text-sm border-b border-slate-800/50 pb-2">
-                <span className="text-slate-400">{formatDate(r.review_date)}</span>
+              <div key={r.id} className="flex items-center justify-between text-sm border-b border-slate-200/50 pb-2">
+                <span className="text-slate-500">{formatDate(r.review_date)}</span>
                 <span className="text-slate-200">{formatCurrency(Number(r.current_rent))} → {formatCurrency(Number(r.proposed_rent))}</span>
                 <Badge color={statusColor(r.status)}>{r.status}</Badge>
               </div>
@@ -908,8 +910,8 @@ function FormsTab({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-semibold">Forms & Documents</h3>
-        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium rounded-lg transition">
+        <h3 className="text-slate-800 font-semibold">Forms & Documents</h3>
+        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-slate-800 text-sm font-medium rounded-lg transition">
           <Plus className="w-4 h-4" /> Add Form
         </button>
       </div>
@@ -918,7 +920,7 @@ function FormsTab({
       ) : (
         <div className="space-y-3">
           {forms.map((f) => (
-            <div key={f.id} className="bg-slate-900 rounded-xl border border-slate-800 p-4 group">
+            <div key={f.id} className="bg-white rounded-xl border border-slate-200 p-4 group">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -933,8 +935,8 @@ function FormsTab({
                 </div>
                 {isAdmin && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={() => onEdit(f)} className="p-1.5 text-slate-500 hover:text-teal-400 rounded-lg hover:bg-slate-800 transition"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => onDelete(f.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onEdit(f)} className="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onDelete(f.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-50 transition"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
               </div>
@@ -1032,8 +1034,8 @@ function FormForm({
         </div>
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition">Cancel</button>
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-slate-800 font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-50 hover:bg-slate-700 text-slate-700 font-medium rounded-lg transition">Cancel</button>
         </div>
       </form>
     </Modal>

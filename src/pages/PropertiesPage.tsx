@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Home, Plus, Pencil, Trash2, Bed, Bath, Car, Download } from 'lucide-react';
+import { Home, Plus, Pencil, Trash2, Bed, Bath, Car, Download, Grid3X3, List, MapPin } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/Toast';
@@ -21,6 +21,7 @@ export function PropertiesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Property | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const { toast } = useToast();
 
@@ -89,7 +90,8 @@ export function PropertiesPage() {
   }
 
   return (
-    <div>
+    <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8">
+      <div className="mx-auto max-w-[1500px]">
       <PageHeader
         title="Properties"
         description={`${properties.length} properties in your portfolio`}
@@ -151,19 +153,25 @@ export function PropertiesPage() {
         }
       />
 
-      <SearchToolbar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search address, suburb, landlord..."
-        statusFilters={statusOptions}
-        statusValue={statusFilter}
-        onStatusChange={setStatusFilter}
-        suburbFilters={suburbOptions}
-        suburbValue={suburbFilter}
-        onSuburbChange={setSuburbFilter}
-        resultCount={filtered.length}
-        onClear={clearFilters}
-      />
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <SearchToolbar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search address, suburb, landlord..."
+          statusFilters={statusOptions}
+          statusValue={statusFilter}
+          onStatusChange={setStatusFilter}
+          suburbFilters={suburbOptions}
+          suburbValue={suburbFilter}
+          onSuburbChange={setSuburbFilter}
+          resultCount={filtered.length}
+          onClear={clearFilters}
+        />
+        <div className="hidden items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 sm:flex">
+          <button onClick={() => setViewMode('grid')} className={`rounded-md p-1.5 ${viewMode === 'grid' ? 'bg-blue-50 text-blue-600' : 'text-slate-400'}`} aria-label="Grid view"><Grid3X3 className="h-4 w-4" /></button>
+          <button onClick={() => setViewMode('list')} className={`rounded-md p-1.5 ${viewMode === 'list' ? 'bg-blue-50 text-blue-600' : 'text-slate-400'}`} aria-label="List view"><List className="h-4 w-4" /></button>
+        </div>
+      </div>
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -177,40 +185,26 @@ export function PropertiesPage() {
           }
         />
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((prop) => {
+        <div className={viewMode === 'grid' ? 'grid gap-4 sm:grid-cols-2 xl:grid-cols-4' : 'space-y-3'}>
+          {filtered.map((prop, index) => {
             const landlord = landlords.find((l) => l.id === prop.landlord_id);
+            const imageTone = ['from-blue-100 via-sky-50 to-orange-100', 'from-amber-100 via-orange-50 to-rose-100', 'from-emerald-100 via-teal-50 to-sky-100', 'from-slate-200 via-blue-50 to-indigo-100'][index % 4];
             return (
-              <div key={prop.id} onClick={() => setSelectedProperty(prop)} className="bg-slate-900 rounded-2xl border border-slate-800 p-5 hover:border-teal-600 transition group cursor-pointer">
-                <div className="flex items-start justify-between mb-3">
-                  <Badge color={statusColor(prop.status)}>{prop.status}</Badge>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={() => { setEditing(prop); setShowForm(true); }} className="p-1.5 text-slate-500 hover:text-teal-400 rounded-lg hover:bg-slate-800 transition">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    {isAdmin && (
-                    <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800 transition">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    )}
+              <div key={prop.id} onClick={() => setSelectedProperty(prop)} className={`group cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md ${viewMode === 'list' ? 'flex items-center' : ''}`}>
+                <div className={`relative flex items-end bg-gradient-to-br ${imageTone} ${viewMode === 'list' ? 'h-24 w-36 shrink-0' : 'h-36'}`}>
+                  <Home className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 text-white/70" strokeWidth={1.2} />
+                  <span className="absolute left-3 top-3 rounded-md bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600">{prop.property_type}</span>
+                  <div className="absolute right-3 top-3 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                    <button onClick={(event) => { event.stopPropagation(); setEditing(prop); setShowForm(true); }} className="rounded-md bg-white p-1.5 text-slate-500 shadow-sm hover:text-blue-600"><Pencil className="h-3.5 w-3.5" /></button>
+                    {isAdmin && <button onClick={(event) => { event.stopPropagation(); handleDelete(prop.id); }} className="rounded-md bg-white p-1.5 text-slate-500 shadow-sm hover:text-red-600"><Trash2 className="h-3.5 w-3.5" /></button>}
                   </div>
                 </div>
-                <h3 className="text-white font-semibold mb-1">{prop.address}</h3>
-                <p className="text-slate-500 text-sm mb-4">
-                  {[prop.suburb, prop.state, prop.postcode].filter(Boolean).join(', ')}
-                </p>
-                <div className="flex items-center gap-4 text-slate-400 text-sm mb-4">
-                  <span className="flex items-center gap-1.5"><Bed className="w-4 h-4" /> {prop.bedrooms}</span>
-                  <span className="flex items-center gap-1.5"><Bath className="w-4 h-4" /> {prop.bathrooms}</span>
-                  <span className="flex items-center gap-1.5"><Car className="w-4 h-4" /> {prop.parking}</span>
-                  <span className="capitalize text-slate-500">{prop.property_type}</span>
+                <div className="min-w-0 flex-1 p-4">
+                  <div className="mb-1 flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold text-slate-800">{prop.address}</h3><Badge color={statusColor(prop.status)}>{prop.status}</Badge></div>
+                  <p className="mb-3 flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5" />{[prop.suburb, prop.state, prop.postcode].filter(Boolean).join(', ') || 'No location set'}</p>
+                  <div className="flex items-center gap-3 text-xs text-slate-500"><span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" />{prop.bedrooms}</span><span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{prop.bathrooms}</span><span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />{prop.parking}</span></div>
+                  {landlord && <div className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">Managed for <span className="font-medium text-slate-700">{landlord.first_name} {landlord.last_name}</span></div>}
                 </div>
-                {landlord && (
-                  <div className="pt-3 border-t border-slate-800">
-                    <p className="text-slate-500 text-xs">Landlord</p>
-                    <p className="text-slate-300 text-sm">{landlord.first_name} {landlord.last_name}</p>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -226,6 +220,7 @@ export function PropertiesPage() {
           onSaved={() => { setShowForm(false); loadData(); }}
         />
       )}
+      </div>
     </div>
   );
 }
