@@ -46,7 +46,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'forms', label: 'Forms' },
 ];
 
-const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent';
+const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
 const labelCls = 'block text-sm font-medium text-slate-700 mb-1.5';
 
 export function PropertyDetail({
@@ -158,24 +158,28 @@ export function PropertyDetail({
   ];
 
   return (
-    <div>
+    <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8">
+      <div className="mx-auto max-w-[1500px]">
       {/* Header */}
       <div className="mb-6">
         <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm font-medium mb-4 transition">
           <ArrowLeft className="w-4 h-4" />
           Back to Properties
         </button>
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-xl font-bold text-slate-800">{property.address}</h2>
-              <Badge color={statusColor(property.status)}>{property.status}</Badge>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="relative flex h-32 items-end bg-gradient-to-br from-blue-100 via-sky-50 to-orange-100 p-5">
+            <Home className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 text-white/60" strokeWidth={1.2} />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-1">
+                <h2 className="text-xl font-bold text-slate-800">{property.address}</h2>
+                <Badge color={statusColor(property.status)} variant="light">{property.status}</Badge>
+              </div>
+              <p className="text-slate-600 text-sm">
+                {[property.suburb, property.state, property.postcode].filter(Boolean).join(', ') || 'No location set'}
+              </p>
             </div>
-            <p className="text-slate-500 text-sm">
-              {[property.suburb, property.state, property.postcode].filter(Boolean).join(', ') || 'No location set'}
-            </p>
           </div>
-          <div className="flex items-center gap-4 text-slate-500 text-sm">
+          <div className="flex items-center gap-5 px-5 py-3 text-sm text-slate-500">
             <span className="flex items-center gap-1.5"><Bed className="w-4 h-4" /> {property.bedrooms}</span>
             <span className="flex items-center gap-1.5"><Bath className="w-4 h-4" /> {property.bathrooms}</span>
             <span className="flex items-center gap-1.5"><Car className="w-4 h-4" /> {property.parking}</span>
@@ -204,7 +208,7 @@ export function PropertyDetail({
       </div>
 
       {loading ? (
-        <Spinner />
+        <Spinner variant="light" />
       ) : (
         <>
           {activeTab === 'overview' && <OverviewTab property={property} landlord={landlord} lease={lease} tenant={tenant} features={features} payments={payments} />}
@@ -351,7 +355,7 @@ function OverviewTab({
             <dl className="space-y-2.5 text-sm">
               <div className="flex justify-between"><dt className="text-slate-500">Tenant</dt><dd className="text-slate-700">{tenant ? `${tenant.first_name} ${tenant.last_name}` : '—'}</dd></div>
               <div className="flex justify-between"><dt className="text-slate-500">Term</dt><dd className="text-slate-700">{formatDate(lease.start_date)} → {formatDate(lease.end_date)}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Status</dt><dd><Badge color={statusColor(lease.status)}>{lease.status}</Badge></dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Status</dt><dd><Badge color={statusColor(lease.status)} variant="light">{lease.status}</Badge></dd></div>
               <div className="flex justify-between"><dt className="text-slate-500">Periodic</dt><dd className="text-slate-700">{lease.is_periodic ? 'Yes' : 'No'}</dd></div>
               <div className="flex justify-between"><dt className="text-slate-500">Paid Until</dt><dd className="text-slate-700">{formatDate(lease.paid_until)}</dd></div>
             </dl>
@@ -397,6 +401,135 @@ function FeeItem({ label, value }: { label: string; value: string }) {
   );
 }
 
+// ============ LEASE TAB ============
+
+function LeaseTab({
+  lease,
+  tenant,
+  payments,
+}: {
+  lease: Lease | null;
+  tenant: Contact | null;
+  payments: Payment[];
+}) {
+  if (!lease) {
+    return (
+      <EmptyState
+        icon={<FileText className="w-7 h-7" />}
+        title="No active lease"
+        description="No lease has been created for this property yet. Create one from the Leases page."
+        variant="light"
+      />
+    );
+  }
+
+  const totalPaid = payments.filter((p) => p.status === 'paid').reduce((s, p) => s + Number(p.amount), 0);
+  const totalOutstanding = payments.filter((p) => p.status !== 'paid').reduce((s, p) => s + Number(p.amount), 0);
+  const daysLeft = daysUntil(lease.end_date);
+
+  const leaseDetails: { label: string; value: string }[] = [
+    { label: 'Tenant', value: tenant ? `${tenant.first_name} ${tenant.last_name}` : '—' },
+    { label: 'Status', value: lease.status },
+    { label: 'Start Date', value: formatDate(lease.start_date) },
+    { label: 'End Date', value: formatDate(lease.end_date) },
+    { label: 'Days Remaining', value: daysLeft >= 0 ? `${daysLeft} days` : 'Expired' },
+    { label: 'Periodic', value: lease.is_periodic ? 'Yes' : 'No' },
+    { label: 'Rent', value: formatCurrency(Number(lease.rent_amount)) },
+    { label: 'Payment Frequency', value: lease.payment_frequency ?? '—' },
+    { label: 'Bond', value: lease.bond_amount ? formatCurrency(Number(lease.bond_amount)) : '—' },
+    { label: 'Paid Until', value: lease.paid_until ? formatDate(lease.paid_until) : '—' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Lease summary stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs mb-1">Rent</p>
+          <p className="text-slate-800 text-lg font-bold">{formatCurrency(Number(lease.rent_amount))}</p>
+          <p className="text-slate-500 text-xs capitalize">{lease.payment_frequency ?? ''}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs mb-1">Bond</p>
+          <p className="text-slate-800 text-lg font-bold">{lease.bond_amount ? formatCurrency(Number(lease.bond_amount)) : '—'}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs mb-1">Collected</p>
+          <p className="text-slate-800 text-lg font-bold">{formatCurrency(totalPaid)}</p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <p className="text-slate-500 text-xs mb-1">Outstanding</p>
+          <p className={`text-lg font-bold ${totalOutstanding > 0 ? 'text-red-600' : 'text-slate-800'}`}>{formatCurrency(totalOutstanding)}</p>
+        </div>
+      </div>
+
+      {/* Lease details */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-blue-600" />
+          <h3 className="text-slate-800 font-semibold">Lease Details</h3>
+          <Badge color={statusColor(lease.status)} variant="light">{lease.status}</Badge>
+        </div>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          {leaseDetails.map((d) => (
+            <div key={d.label} className="flex justify-between border-b border-slate-100 pb-2">
+              <dt className="text-slate-500">{d.label}</dt>
+              <dd className="text-slate-700 font-medium capitalize">{d.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Tenant contact info */}
+      {tenant && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Home className="w-5 h-5 text-blue-600" />
+            <h3 className="text-slate-800 font-semibold">Tenant Contact</h3>
+          </div>
+          <dl className="space-y-2.5 text-sm">
+            <div className="flex justify-between"><dt className="text-slate-500">Name</dt><dd className="text-slate-700">{tenant.first_name} {tenant.last_name}</dd></div>
+            {tenant.email && <div className="flex justify-between"><dt className="text-slate-500">Email</dt><dd className="text-slate-700">{tenant.email}</dd></div>}
+            {tenant.phone && <div className="flex justify-between"><dt className="text-slate-500">Phone</dt><dd className="text-slate-700">{tenant.phone}</dd></div>}
+          </dl>
+        </div>
+      )}
+
+      {/* Recent payments */}
+      {payments.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-200">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            <h3 className="text-slate-800 font-semibold">Recent Payments</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200 text-left">
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Due Date</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Amount</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-slate-500 text-xs font-medium uppercase tracking-wider">Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.slice(0, 5).map((p) => (
+                  <tr key={p.id} className="border-b border-slate-100">
+                    <td className="px-5 py-3 text-slate-700 text-sm">{formatDate(p.due_date)}</td>
+                    <td className="px-5 py-3 text-slate-700 text-sm font-medium">{formatCurrency(Number(p.amount))}</td>
+                    <td className="px-5 py-3"><Badge color={statusColor(p.status)} variant="light">{p.status}</Badge></td>
+                    <td className="px-5 py-3 text-slate-500 text-sm">{p.paid_date ? formatDate(p.paid_date) : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============ LEASE TASKS TAB ============
 
 function LeaseTasksTab({
@@ -420,12 +553,12 @@ function LeaseTasksTab({
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-slate-800 font-semibold">Lease Tasks</h3>
-        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-slate-800 text-sm font-medium rounded-lg transition">
+        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
           <Plus className="w-4 h-4" /> Add Task
         </button>
       </div>
       {tasks.length === 0 ? (
-        <EmptyState icon={<Check className="w-7 h-7" />} title="No tasks" description="Track lease-related tasks like renewals, inspections, and follow-ups." />
+        <EmptyState icon={<Check className="w-7 h-7" />} title="No tasks" description="Track lease-related tasks like renewals, inspections, and follow-ups." variant="light" />
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
@@ -436,12 +569,12 @@ function LeaseTasksTab({
                   task.status === 'completed' ? 'bg-blue-600 border-blue-600' : 'border-slate-600 hover:border-blue-600'
                 }`}
               >
-                {task.status === 'completed' && <Check className="w-3 h-3 text-slate-800" />}
+                {task.status === 'completed' && <Check className="w-3 h-3 text-white" />}
               </button>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className={`text-sm font-medium ${task.status === 'completed' ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{task.title}</p>
-                  <Badge color={priorityColor[task.priority]}>{task.priority}</Badge>
+                  <p className={`text-sm font-medium ${task.status === 'completed' ? 'text-slate-500 line-through' : 'text-slate-700'}`}>{task.title}</p>
+                  <Badge color={priorityColor[task.priority]} variant="light">{task.priority}</Badge>
                 </div>
                 {task.description && <p className="text-slate-500 text-sm mt-0.5">{task.description}</p>}
                 <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
@@ -513,7 +646,7 @@ function TaskForm({
   }
 
   return (
-    <Modal title={task ? 'Edit Task' : 'Add Task'} onClose={onClose}>
+    <Modal title={task ? 'Edit Task' : 'Add Task'} onClose={onClose} variant="light">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={labelCls}>Title</label>
@@ -543,8 +676,8 @@ function TaskForm({
         </div>
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-slate-800 font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-50 hover:bg-slate-700 text-slate-700 font-medium rounded-lg transition">Cancel</button>
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">Cancel</button>
         </div>
       </form>
     </Modal>
@@ -579,7 +712,7 @@ function TransactionsTab({ payments, onMarkPaid }: { payments: Payment[]; onMark
       </div>
 
       {payments.length === 0 ? (
-        <EmptyState icon={<TrendingUp className="w-7 h-7" />} title="No transactions" description="Payments for this property's lease will appear here." />
+        <EmptyState icon={<TrendingUp className="w-7 h-7" />} title="No transactions" description="Payments for this property's lease will appear here." variant="light" />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -598,8 +731,8 @@ function TransactionsTab({ payments, onMarkPaid }: { payments: Payment[]; onMark
                 {payments.map((p) => (
                   <tr key={p.id} className="border-b border-slate-200/50 hover:bg-slate-50/30 transition group">
                     <td className="px-5 py-4 text-slate-700 text-sm">{formatDate(p.due_date)}</td>
-                    <td className="px-5 py-4 text-slate-200 text-sm font-medium">{formatCurrency(Number(p.amount))}</td>
-                    <td className="px-5 py-4"><Badge color={statusColor(p.status)}>{p.status}</Badge></td>
+                    <td className="px-5 py-4 text-slate-700 text-sm font-medium">{formatCurrency(Number(p.amount))}</td>
+                    <td className="px-5 py-4"><Badge color={statusColor(p.status)} variant="light">{p.status}</Badge></td>
                     <td className="px-5 py-4 text-slate-500 text-sm">{formatDate(p.paid_date)}</td>
                     <td className="px-5 py-4 text-slate-500 text-sm">{p.method ?? '—'}</td>
                     <td className="px-5 py-4 text-right">
@@ -637,12 +770,12 @@ function InspectionsTab({
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-slate-800 font-semibold">Inspections</h3>
-        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-slate-800 text-sm font-medium rounded-lg transition">
+        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
           <Plus className="w-4 h-4" /> Schedule Inspection
         </button>
       </div>
       {inspections.length === 0 ? (
-        <EmptyState icon={<ClipboardCheck className="w-7 h-7" />} title="No inspections" description="Schedule routine, entry, and exit inspections for this property." />
+        <EmptyState icon={<ClipboardCheck className="w-7 h-7" />} title="No inspections" description="Schedule routine, entry, and exit inspections for this property." variant="light" />
       ) : (
         <div className="space-y-3">
           {inspections.map((insp) => (
@@ -650,8 +783,8 @@ function InspectionsTab({
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-slate-200 text-sm font-medium capitalize">{insp.type} Inspection</span>
-                    <Badge color={statusColor(insp.status)}>{insp.status}</Badge>
+                    <span className="text-slate-700 text-sm font-medium capitalize">{insp.type} Inspection</span>
+                    <Badge color={statusColor(insp.status)} variant="light">{insp.status}</Badge>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-500">
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(insp.inspection_date)}</span>
@@ -719,7 +852,7 @@ function InspectionForm({
   }
 
   return (
-    <Modal title={inspection ? 'Edit Inspection' : 'Schedule Inspection'} onClose={onClose}>
+    <Modal title={inspection ? 'Edit Inspection' : 'Schedule Inspection'} onClose={onClose} variant="light">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -756,8 +889,8 @@ function InspectionForm({
         </div>
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-slate-800 font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-50 hover:bg-slate-700 text-slate-700 font-medium rounded-lg transition">Cancel</button>
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">Cancel</button>
         </div>
       </form>
     </Modal>
@@ -856,7 +989,7 @@ function ReportsTab({
               <button
                 onClick={r.onExport}
                 disabled={r.count === 0}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-700 disabled:opacity-50 text-slate-200 text-xs font-medium rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-600 text-xs font-medium rounded-lg transition"
               >
                 <Download className="w-3.5 h-3.5" /> Export CSV
               </button>
@@ -872,8 +1005,8 @@ function ReportsTab({
             {rentReviews.slice(0, 5).map((r) => (
               <div key={r.id} className="flex items-center justify-between text-sm border-b border-slate-200/50 pb-2">
                 <span className="text-slate-500">{formatDate(r.review_date)}</span>
-                <span className="text-slate-200">{formatCurrency(Number(r.current_rent))} → {formatCurrency(Number(r.proposed_rent))}</span>
-                <Badge color={statusColor(r.status)}>{r.status}</Badge>
+                <span className="text-slate-700">{formatCurrency(Number(r.current_rent))} → {formatCurrency(Number(r.proposed_rent))}</span>
+                <Badge color={statusColor(r.status)} variant="light">{r.status}</Badge>
               </div>
             ))}
           </div>
@@ -911,12 +1044,12 @@ function FormsTab({
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-slate-800 font-semibold">Forms & Documents</h3>
-        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-slate-800 text-sm font-medium rounded-lg transition">
+        <button onClick={onAdd} className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
           <Plus className="w-4 h-4" /> Add Form
         </button>
       </div>
       {forms.length === 0 ? (
-        <EmptyState icon={<FileText className="w-7 h-7" />} title="No forms" description="Track lease agreements, notices, and other documents for this property." />
+        <EmptyState icon={<FileText className="w-7 h-7" />} title="No forms" description="Track lease agreements, notices, and other documents for this property." variant="light" />
       ) : (
         <div className="space-y-3">
           {forms.map((f) => (
@@ -924,8 +1057,8 @@ function FormsTab({
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-slate-200 text-sm font-medium">{f.title}</span>
-                    <Badge color={statusColor(f.status)}>{f.status}</Badge>
+                    <span className="text-slate-700 text-sm font-medium">{f.title}</span>
+                    <Badge color={statusColor(f.status)} variant="light">{f.status}</Badge>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-500">
                     <span className="capitalize">{formTypeLabels[f.form_type] ?? f.form_type}</span>
@@ -993,7 +1126,7 @@ function FormForm({
   }
 
   return (
-    <Modal title={form ? 'Edit Form' : 'Add Form'} onClose={onClose}>
+    <Modal title={form ? 'Edit Form' : 'Add Form'} onClose={onClose} variant="light">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={labelCls}>Title</label>
@@ -1034,8 +1167,8 @@ function FormForm({
         </div>
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-slate-800 font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-50 hover:bg-slate-700 text-slate-700 font-medium rounded-lg transition">Cancel</button>
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg transition">{busy ? 'Saving…' : 'Save'}</button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">Cancel</button>
         </div>
       </form>
     </Modal>

@@ -52,7 +52,7 @@ export function PropertiesPage() {
     }
   }
 
-  if (loading) return <Spinner />;
+  if (loading) return <Spinner variant="light" />;
 
   const statusOptions: FilterOption[] = [
     { label: 'All statuses', value: 'all' },
@@ -95,6 +95,7 @@ export function PropertiesPage() {
       <PageHeader
         title="Properties"
         description={`${properties.length} properties in your portfolio`}
+        variant="light"
         action={
           <div className="flex items-center gap-2">
             <button
@@ -137,14 +138,14 @@ export function PropertiesPage() {
                 { header: 'No Admin Fee If Vacant', value: (p) => (p.do_not_charge_admin_fee_if_vacant ? 'Yes' : 'No') },
               ], filtered)}
               disabled={filtered.length === 0}
-              className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 text-sm font-medium rounded-lg transition"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 text-sm font-medium rounded-lg transition"
             >
               <Download className="w-4 h-4" />
               Export CSV
             </button>
             <button
               onClick={() => { setEditing(null); setShowForm(true); }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium rounded-lg transition"
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
             >
               <Plus className="w-4 h-4" />
               Add Property
@@ -178,8 +179,9 @@ export function PropertiesPage() {
           icon={<Home className="w-7 h-7" />}
           title="No properties yet"
           description="Add your first property to start managing your portfolio."
+          variant="light"
           action={
-            <button onClick={() => { setEditing(null); setShowForm(true); }} className="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-white text-sm font-medium rounded-lg transition">
+            <button onClick={() => { setEditing(null); setShowForm(true); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
               Add Property
             </button>
           }
@@ -200,7 +202,7 @@ export function PropertiesPage() {
                   </div>
                 </div>
                 <div className="min-w-0 flex-1 p-4">
-                  <div className="mb-1 flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold text-slate-800">{prop.address}</h3><Badge color={statusColor(prop.status)}>{prop.status}</Badge></div>
+                  <div className="mb-1 flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold text-slate-800">{prop.address}</h3><Badge color={statusColor(prop.status)} variant="light">{prop.status}</Badge></div>
                   <p className="mb-3 flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5" />{[prop.suburb, prop.state, prop.postcode].filter(Boolean).join(', ') || 'No location set'}</p>
                   <div className="flex items-center gap-3 text-xs text-slate-500"><span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" />{prop.bedrooms}</span><span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{prop.bathrooms}</span><span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />{prop.parking}</span></div>
                   {landlord && <div className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">Managed for <span className="font-medium text-slate-700">{landlord.first_name} {landlord.last_name}</span></div>}
@@ -338,10 +340,10 @@ function PropertyForm({
     setBusy(false);
   }
 
-  const inputCls = 'w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent';
-  const labelCls = 'block text-sm font-medium text-slate-300 mb-1.5';
-  const sectionCls = 'border-t border-slate-800 pt-4 mt-4';
-  const sectionTitleCls = 'text-sm font-semibold text-teal-400 mb-3';
+  const inputCls = 'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+  const labelCls = 'block text-sm font-medium text-slate-700 mb-1.5';
+  const sectionCls = 'border-t border-slate-200 pt-4 mt-4';
+  const sectionTitleCls = 'text-sm font-semibold text-blue-600 mb-3';
 
   const featureToggles: { key: keyof typeof form; label: string }[] = [
     { key: 'has_aircon', label: 'Air Conditioning' },
@@ -357,7 +359,7 @@ function PropertyForm({
   ];
 
   return (
-    <Modal title={property ? 'Edit Property' : 'Add Property'} onClose={onClose}>
+    <Modal title={property ? 'Edit Property' : 'Add Property'} onClose={onClose} variant="light">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Property Details */}
         <div>
@@ -477,14 +479,14 @@ function PropertyForm({
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {featureToggles.map(({ key, label }) => (
-              <label key={key} className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer hover:border-slate-600 transition">
+              <label key={key} className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:border-slate-300 transition">
                 <input
                   type="checkbox"
                   checked={form[key] as boolean}
                   onChange={(e) => set(key, e.target.checked)}
-                  className="w-4 h-4 rounded accent-teal-500"
+                  className="w-4 h-4 rounded accent-blue-600"
                 />
-                <span className="text-sm text-slate-300">{label}</span>
+                <span className="text-sm text-slate-700">{label}</span>
               </label>
             ))}
           </div>
@@ -503,14 +505,14 @@ function PropertyForm({
               </select>
             </div>
             <div className="flex items-end">
-              <label className="flex items-center gap-2 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer hover:border-slate-600 transition w-full">
+              <label className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:border-slate-300 transition w-full">
                 <input
                   type="checkbox"
                   checked={form.split_payments}
                   onChange={(e) => set('split_payments', e.target.checked)}
-                  className="w-4 h-4 rounded accent-teal-500"
+                  className="w-4 h-4 rounded accent-blue-600"
                 />
-                <span className="text-sm text-slate-300">Split payments across owners</span>
+                <span className="text-sm text-slate-700">Split payments across owners</span>
               </label>
             </div>
           </div>
@@ -575,14 +577,14 @@ function PropertyForm({
               </select>
             </div>
             <div className="flex items-end">
-              <label className="flex items-center gap-2 px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer hover:border-slate-600 transition w-full">
+              <label className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:border-slate-300 transition w-full">
                 <input
                   type="checkbox"
                   checked={form.do_not_charge_admin_fee_if_vacant}
                   onChange={(e) => set('do_not_charge_admin_fee_if_vacant', e.target.checked)}
-                  className="w-4 h-4 rounded accent-teal-500"
+                  className="w-4 h-4 rounded accent-blue-600"
                 />
-                <span className="text-sm text-slate-300">Don't charge admin fee when vacant</span>
+                <span className="text-sm text-slate-700">Don't charge admin fee when vacant</span>
               </label>
             </div>
           </div>
@@ -590,10 +592,10 @@ function PropertyForm({
 
         {error && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3.5 py-2.5 text-sm text-red-400">{error}</div>}
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-white font-medium rounded-lg transition">
+          <button type="submit" disabled={busy} className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium rounded-lg transition">
             {busy ? 'Saving…' : property ? 'Save Changes' : 'Add Property'}
           </button>
-          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition">
+          <button type="button" onClick={onClose} className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">
             Cancel
           </button>
         </div>
