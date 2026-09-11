@@ -15,6 +15,14 @@ export type Agency = {
   name: string;
   slug: string;
   plan: string;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  postcode: string | null;
+  abn: string | null;
   created_at: string;
 };
 

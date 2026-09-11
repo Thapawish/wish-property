@@ -14,10 +14,11 @@ import {
   Zap,
   BarChart3,
   ChevronDown,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance' | 'reports-snapshot' | 'reports-gain-loss' | 'reports-financials' | 'reports-efficiency' | 'reports-data';
+export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance' | 'reports-snapshot' | 'reports-gain-loss' | 'reports-financials' | 'reports-efficiency' | 'reports-data' | 'settings-profile' | 'settings-agency' | 'settings-payments' | 'settings-preferences';
 
 const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: string }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, shortLabel: 'Home' },
@@ -28,6 +29,14 @@ const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: s
   { key: 'payments', label: 'Payments', icon: DollarSign, shortLabel: 'Payments' },
   { key: 'rent-reviews', label: 'Rent Reviews', icon: TrendingUp, shortLabel: 'Reviews' },
   { key: 'maintenance', label: 'Maintenance', icon: Wrench, shortLabel: 'System' },
+  { key: 'settings-profile', label: 'Settings', icon: Settings, shortLabel: 'Settings' },
+];
+
+const SETTINGS_SUB_ITEMS: { key: PageKey; label: string }[] = [
+  { key: 'settings-profile', label: 'My Profile' },
+  { key: 'settings-agency', label: 'Agency Profile' },
+  { key: 'settings-payments', label: 'Payment Settings' },
+  { key: 'settings-preferences', label: 'Preferences' },
 ];
 
 const REPORT_SUB_ITEMS: { key: PageKey; label: string }[] = [
@@ -52,6 +61,10 @@ const PAGE_LABELS: Record<PageKey, string> = {
   'reports-financials': 'Reports — Financials',
   'reports-efficiency': 'Reports — Efficiency',
   'reports-data': 'Reports — Data',
+  'settings-profile': 'Settings — My Profile',
+  'settings-agency': 'Settings — Agency Profile',
+  'settings-payments': 'Settings — Payment Settings',
+  'settings-preferences': 'Settings — Preferences',
 };
 
 const MOBILE_NAV: { key: PageKey; icon: typeof Home; shortLabel: string }[] = [
