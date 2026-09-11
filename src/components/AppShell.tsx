@@ -12,10 +12,12 @@ import {
   X,
   Wrench,
   Zap,
+  BarChart3,
+  ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance';
+export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance' | 'reports-snapshot' | 'reports-gain-loss' | 'reports-financials' | 'reports-efficiency' | 'reports-data';
 
 const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: string }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, shortLabel: 'Home' },
@@ -27,6 +29,30 @@ const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: s
   { key: 'rent-reviews', label: 'Rent Reviews', icon: TrendingUp, shortLabel: 'Reviews' },
   { key: 'maintenance', label: 'Maintenance', icon: Wrench, shortLabel: 'System' },
 ];
+
+const REPORT_SUB_ITEMS: { key: PageKey; label: string }[] = [
+  { key: 'reports-snapshot', label: 'Snapshot' },
+  { key: 'reports-gain-loss', label: 'Gain/Lost' },
+  { key: 'reports-financials', label: 'Financials' },
+  { key: 'reports-efficiency', label: 'Efficiency' },
+  { key: 'reports-data', label: 'Data' },
+];
+
+const PAGE_LABELS: Record<PageKey, string> = {
+  dashboard: 'Dashboard',
+  'action-center': 'Action Centre',
+  properties: 'Properties',
+  leases: 'Leases',
+  contacts: 'Contacts',
+  payments: 'Payments',
+  'rent-reviews': 'Rent Reviews',
+  maintenance: 'Maintenance',
+  'reports-snapshot': 'Reports — Snapshot',
+  'reports-gain-loss': 'Reports — Gain/Lost',
+  'reports-financials': 'Reports — Financials',
+  'reports-efficiency': 'Reports — Efficiency',
+  'reports-data': 'Reports — Data',
+};
 
 const MOBILE_NAV: { key: PageKey; icon: typeof Home; shortLabel: string }[] = [
   { key: 'dashboard', icon: LayoutDashboard, shortLabel: 'Home' },
@@ -46,6 +72,8 @@ export function AppShell({
 }) {
   const { membership, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const isReportsActive = current.startsWith('reports-');
 
   const agency = membership?.agencies;
 
@@ -92,6 +120,42 @@ export function AppShell({
               </button>
             );
           })}
+
+          {/* Reports — expandable group */}
+          <div>
+            <button
+              onClick={() => setReportsOpen((open) => !open)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                isReportsActive
+                  ? 'bg-teal-500/10 text-teal-400'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              <BarChart3 className="w-[18px] h-[18px]" />
+              Reports
+              <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${reportsOpen || isReportsActive ? 'rotate-180' : ''}`} />
+            </button>
+            {(reportsOpen || isReportsActive) && (
+              <div className="mt-1 ml-6 space-y-0.5 border-l border-slate-800 pl-3">
+                {REPORT_SUB_ITEMS.map((sub) => (
+                  <button
+                    key={sub.key}
+                    onClick={() => {
+                      onNavigate(sub.key);
+                      setMobileOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium transition ${
+                      current === sub.key
+                        ? 'text-teal-400'
+                        : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/50'
+                    }`}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="p-3 border-t border-slate-800">
@@ -131,7 +195,7 @@ export function AppShell({
             <Menu className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-semibold text-white capitalize hidden sm:block">
-            {current.replace('-', ' ')}
+            {PAGE_LABELS[current]}
           </h1>
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
