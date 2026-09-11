@@ -275,6 +275,7 @@ export function PropertyDetail({
           onSaved={() => { setShowFormForm(false); loadData(); }}
         />
       )}
+      </div>
     </div>
   );
 }
