@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { Building2, Check, CreditCard, UserRound, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -110,7 +110,9 @@ function ProfileSection({ profile, setProfile, email, saving, onSave }: { profil
   return <div><SectionHeader title="My Profile" description="Update your personal details and contact information." /><div className="grid max-w-2xl gap-5 sm:grid-cols-2"><Field label="First name" value={profile.first_name} onChange={(value) => setProfile({ ...profile, first_name: value })} /><Field label="Last name" value={profile.last_name} onChange={(value) => setProfile({ ...profile, last_name: value })} /><Field label="Email address" value={email} onChange={() => undefined} disabled /><Field label="Phone number" value={profile.phone} onChange={(value) => setProfile({ ...profile, phone: value })} /></div><SaveButton saving={saving} onSave={onSave} /></div>;
 }
 
-function AgencySection({ agency, setAgency, isAdmin, saving, onSave }: { agency: Record<string, string>; setAgency: (agency: Record<string, string>) => void; isAdmin: boolean; saving: boolean; onSave: () => void }) {
+type AgencyForm = { name: string; email: string; phone: string; website: string; address: string; city: string; state: string; postcode: string; abn: string };
+
+function AgencySection({ agency, setAgency, isAdmin, saving, onSave }: { agency: AgencyForm; setAgency: Dispatch<SetStateAction<AgencyForm>>; isAdmin: boolean; saving: boolean; onSave: () => void }) {
   return <div><SectionHeader title="Agency Profile" description="Manage the public business information for your agency." />{!isAdmin && <Notice>Only agency administrators can edit these details.</Notice>}<div className="grid max-w-3xl gap-5 sm:grid-cols-2"><Field label="Agency name" value={agency.name} onChange={(value) => setAgency({ ...agency, name: value })} disabled={!isAdmin} /><Field label="ABN" value={agency.abn} onChange={(value) => setAgency({ ...agency, abn: value })} disabled={!isAdmin} /><Field label="Business email" value={agency.email} onChange={(value) => setAgency({ ...agency, email: value })} type="email" disabled={!isAdmin} /><Field label="Phone" value={agency.phone} onChange={(value) => setAgency({ ...agency, phone: value })} disabled={!isAdmin} /><Field label="Website" value={agency.website} onChange={(value) => setAgency({ ...agency, website: value })} disabled={!isAdmin} /><Field label="Street address" value={agency.address} onChange={(value) => setAgency({ ...agency, address: value })} disabled={!isAdmin} /><Field label="City / suburb" value={agency.city} onChange={(value) => setAgency({ ...agency, city: value })} disabled={!isAdmin} /><Field label="State" value={agency.state} onChange={(value) => setAgency({ ...agency, state: value })} disabled={!isAdmin} /><Field label="Postcode" value={agency.postcode} onChange={(value) => setAgency({ ...agency, postcode: value })} disabled={!isAdmin} /></div>{isAdmin && <SaveButton saving={saving} onSave={onSave} />}</div>;
 }
 

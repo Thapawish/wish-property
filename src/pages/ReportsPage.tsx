@@ -22,6 +22,7 @@ export function ReportsPage({ section = 'snapshot' }: { section?: ReportSection 
   const { membership } = useAuth();
   const [data, setData] = useState<ReportData>({ properties: [], leases: [], payments: [] });
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<ReportSection>(section);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
@@ -40,6 +41,10 @@ export function ReportsPage({ section = 'snapshot' }: { section?: ReportSection 
     });
     return () => { cancelled = true; };
   }, [membership?.agency_id]);
+
+  useEffect(() => {
+    setActiveSection(section);
+  }, [section]);
 
   const filteredPayments = useMemo(() => data.payments.filter((payment) => (!fromDate || payment.due_date >= fromDate) && (!toDate || payment.due_date <= toDate)), [data.payments, fromDate, toDate]);
   const income = filteredPayments.filter((payment) => payment.status === 'paid').reduce((total, payment) => total + Number(payment.amount), 0);
@@ -70,18 +75,18 @@ export function ReportsPage({ section = 'snapshot' }: { section?: ReportSection 
         </div>
 
         <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2">
-          {sections.map((item) => <a key={item.key} href={`#${item.key}`} className={`rounded-lg px-4 py-2 text-sm font-medium transition ${section === item.key ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>{item.label}</a>)}
+          {sections.map((item) => <button key={item.key} onClick={() => setActiveSection(item.key)} className={`rounded-lg px-4 py-2 text-sm font-medium transition ${activeSection === item.key ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>{item.label}</button>)}
           <div className="ml-auto flex items-center gap-2">
             <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-600" aria-label="From date" />
             <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-600" aria-label="To date" />
           </div>
         </div>
 
-        {section === 'snapshot' && <Snapshot properties={data.properties} leases={activeLeases} income={income} outstanding={outstanding} occupancy={occupancy} />}
-        {section === 'gain-loss' && <GainLoss properties={data.properties} income={income} outstanding={outstanding} />}
-        {section === 'financials' && <Financials payments={filteredPayments} income={income} outstanding={outstanding} />}
-        {section === 'efficiency' && <Efficiency properties={data.properties} leases={data.leases} payments={filteredPayments} />}
-        {section === 'data' && <DataTable properties={data.properties} leases={data.leases} payments={filteredPayments} />}
+        {activeSection === 'snapshot' && <Snapshot properties={data.properties} leases={activeLeases} income={income} outstanding={outstanding} occupancy={occupancy} />}
+        {activeSection === 'gain-loss' && <GainLoss properties={data.properties} income={income} outstanding={outstanding} />}
+        {activeSection === 'financials' && <Financials payments={filteredPayments} income={income} outstanding={outstanding} />}
+        {activeSection === 'efficiency' && <Efficiency properties={data.properties} leases={data.leases} payments={filteredPayments} />}
+        {activeSection === 'data' && <DataTable properties={data.properties} leases={data.leases} payments={filteredPayments} />}
       </div>
     </div>
   );

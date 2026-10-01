@@ -29,7 +29,6 @@ const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: s
   { key: 'payments', label: 'Payments', icon: DollarSign, shortLabel: 'Payments' },
   { key: 'rent-reviews', label: 'Rent Reviews', icon: TrendingUp, shortLabel: 'Reviews' },
   { key: 'maintenance', label: 'Maintenance', icon: Wrench, shortLabel: 'System' },
-  { key: 'settings-profile', label: 'Settings', icon: Settings, shortLabel: 'Settings' },
 ];
 
 const SETTINGS_SUB_ITEMS: { key: PageKey; label: string }[] = [
@@ -86,7 +85,9 @@ export function AppShell({
   const { membership, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const isReportsActive = current.startsWith('reports-');
+  const isSettingsActive = current.startsWith('settings-');
 
   const agency = membership?.agencies;
 
@@ -169,10 +170,36 @@ export function AppShell({
               </div>
             )}
           </div>
+
+          <div>
+            <button
+              onClick={() => setSettingsOpen((open) => !open)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                isSettingsActive ? 'bg-teal-500/10 text-teal-400' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              <Settings className="w-[18px] h-[18px]" />
+              Settings
+              <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${settingsOpen || isSettingsActive ? 'rotate-180' : ''}`} />
+            </button>
+            {(settingsOpen || isSettingsActive) && (
+              <div className="mt-1 ml-6 space-y-0.5 border-l border-slate-800 pl-3">
+                {SETTINGS_SUB_ITEMS.map((sub) => (
+                  <button
+                    key={sub.key}
+                    onClick={() => { onNavigate(sub.key); setMobileOpen(false); }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium transition ${current === sub.key ? 'text-teal-400' : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/50'}`}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="p-3 border-t border-slate-800">
-          <div className="px-3 py-2 mb-1">
+          <button onClick={() => onNavigate('settings-profile')} className="w-full px-3 py-2 mb-1 text-left rounded-lg hover:bg-slate-800/60 transition">
             <p className="text-slate-500 text-xs">Signed in as</p>
             <p className="text-slate-300 text-sm truncate capitalize">{membership?.role.replace('_', ' ')}</p>
             {membership?.role === 'agency_admin' ? (
@@ -180,7 +207,7 @@ export function AppShell({
             ) : (
               <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-400">View & edit</span>
             )}
-          </div>
+          </button>
           <button
             onClick={signOut}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
