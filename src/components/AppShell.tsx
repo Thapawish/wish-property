@@ -92,22 +92,22 @@ export function AppShell({
   const agency = membership?.agencies;
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-slate-100 flex">
       {/* Sidebar — desktop only */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 shadow-[0_2px_12px_rgba(15,23,42,0.06)] flex flex-col transition-transform duration-200 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="h-16 flex items-center gap-2.5 px-5 border-b border-slate-800">
-          <div className="w-9 h-9 rounded-xl bg-teal-500 flex items-center justify-center">
+        <div className="h-16 flex items-center gap-2.5 px-5 border-b border-slate-100">
+          <div className="w-9 h-9 rounded-xl bg-[#1000d6] flex items-center justify-center">
             <Building2 className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-white font-semibold text-sm leading-tight">PropertyHub</p>
+            <p className="text-slate-900 font-semibold text-sm leading-tight">PropertyHub</p>
             <p className="text-slate-500 text-xs truncate">{agency?.name ?? 'Agency'}</p>
           </div>
-          <button onClick={() => setMobileOpen(false)} className="lg:hidden ml-auto text-slate-400 hover:text-white">
+          <button onClick={() => setMobileOpen(false)} className="lg:hidden ml-auto text-slate-400 hover:text-slate-800">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -125,8 +125,8 @@ export function AppShell({
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                   active
-                    ? 'bg-teal-500/10 text-teal-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-blue-50 text-[#1000d6]'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
                 <Icon className="w-[18px] h-[18px]" />
@@ -141,8 +141,8 @@ export function AppShell({
               onClick={() => setReportsOpen((open) => !open)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                 isReportsActive
-                  ? 'bg-teal-500/10 text-teal-400'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-blue-50 text-[#1000d6]'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               <BarChart3 className="w-[18px] h-[18px]" />
@@ -150,7 +150,7 @@ export function AppShell({
               <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${reportsOpen || isReportsActive ? 'rotate-180' : ''}`} />
             </button>
             {(reportsOpen || isReportsActive) && (
-              <div className="mt-1 ml-6 space-y-0.5 border-l border-slate-800 pl-3">
+              <div className="mt-1 ml-6 space-y-0.5 border-l border-slate-200 pl-3">
                 {REPORT_SUB_ITEMS.map((sub) => (
                   <button
                     key={sub.key}
@@ -160,8 +160,8 @@ export function AppShell({
                     }}
                     className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium transition ${
                       current === sub.key
-                        ? 'text-teal-400'
-                        : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'text-[#1000d6]'
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
                     {sub.label}
@@ -175,7 +175,7 @@ export function AppShell({
             <button
               onClick={() => setSettingsOpen((open) => !open)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                isSettingsActive ? 'bg-teal-500/10 text-teal-400' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                isSettingsActive ? 'bg-blue-50 text-[#1000d6]' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               <Settings className="w-[18px] h-[18px]" />
@@ -183,12 +183,12 @@ export function AppShell({
               <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${settingsOpen || isSettingsActive ? 'rotate-180' : ''}`} />
             </button>
             {(settingsOpen || isSettingsActive) && (
-              <div className="mt-1 ml-6 space-y-0.5 border-l border-slate-800 pl-3">
+              <div className="mt-1 ml-6 space-y-0.5 border-l border-slate-200 pl-3">
                 {SETTINGS_SUB_ITEMS.map((sub) => (
                   <button
                     key={sub.key}
                     onClick={() => { onNavigate(sub.key); setMobileOpen(false); }}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium transition ${current === sub.key ? 'text-teal-400' : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/50'}`}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium transition ${current === sub.key ? 'text-[#1000d6]' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                   >
                     {sub.label}
                   </button>
@@ -198,19 +198,19 @@ export function AppShell({
           </div>
         </nav>
 
-        <div className="p-3 border-t border-slate-800">
-          <button onClick={() => onNavigate('settings-profile')} className="w-full px-3 py-2 mb-1 text-left rounded-lg hover:bg-slate-800/60 transition">
+        <div className="p-3 border-t border-slate-200">
+          <button onClick={() => onNavigate('settings-profile')} className="w-full px-3 py-2 mb-1 text-left rounded-lg hover:bg-slate-50 transition">
             <p className="text-slate-500 text-xs">Signed in as</p>
-            <p className="text-slate-300 text-sm truncate capitalize">{membership?.role.replace('_', ' ')}</p>
+            <p className="text-slate-700 text-sm truncate capitalize">{membership?.role.replace('_', ' ')}</p>
             {membership?.role === 'agency_admin' ? (
-              <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-500/10 text-teal-400">Admin access</span>
+              <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-[#1000d6]">Admin access</span>
             ) : (
-              <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-700 text-slate-400">View & edit</span>
+              <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">View & edit</span>
             )}
           </button>
           <button
             onClick={signOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 transition"
           >
             <LogOut className="w-[18px] h-[18px]" />
             Sign Out
@@ -220,29 +220,29 @@ export function AppShell({
 
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/20 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30 safe-top">
+        <header className="h-16 bg-white border-b border-slate-200 shadow-[0_1px_4px_rgba(15,23,42,0.04)] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30 safe-top">
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden text-slate-400 hover:text-white p-1"
+            className="lg:hidden text-slate-500 hover:text-slate-900 p-1"
           >
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="text-lg font-semibold text-white capitalize hidden sm:block">
+          <h1 className="text-lg font-semibold text-slate-900 capitalize hidden sm:block">
             {PAGE_LABELS[current]}
           </h1>
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <p className="text-slate-300 text-sm font-medium leading-tight">{agency?.name}</p>
+              <p className="text-slate-700 text-sm font-medium leading-tight">{agency?.name}</p>
               <p className="text-slate-500 text-xs leading-tight">Plan: {agency?.plan}</p>
             </div>
-            <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 text-sm font-medium">
+            <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-[#1000d6] text-sm font-medium">
               {agency?.name?.charAt(0).toUpperCase() ?? 'A'}
             </div>
           </div>
@@ -252,7 +252,7 @@ export function AppShell({
       </div>
 
       {/* Bottom nav — mobile only */}
-      <nav className="fixed bottom-0 inset-x-0 z-30 lg:hidden bg-slate-900/95 backdrop-blur border-t border-slate-800 safe-bottom-nav">
+      <nav className="fixed bottom-0 inset-x-0 z-30 lg:hidden bg-white/95 backdrop-blur border-t border-slate-200 safe-bottom-nav">
         <div className="flex items-center justify-around px-2 pt-2">
           {MOBILE_NAV.map((item) => {
             const Icon = item.icon;
@@ -262,7 +262,7 @@ export function AppShell({
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
                 className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg transition ${
-                  active ? 'text-teal-400' : 'text-slate-500'
+                  active ? 'text-[#1000d6]' : 'text-slate-500'
                 }`}
               >
                 <Icon className="w-5 h-5" />

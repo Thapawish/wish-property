@@ -56,10 +56,16 @@ export function SettingsPage({ initialSection = 'profile' }: { initialSection?: 
     toast(error ? 'Could not save your profile.' : 'Profile saved.', error ? 'error' : 'success');
   }
 
+  async function recordAudit(action: string, entityType: string, details: Record<string, string | number>) {
+    if (!membership || !user) return;
+    await supabase.from('admin_audit_log').insert({ agency_id: membership.agency_id, actor_user_id: user.id, action, entity_type: entityType, details });
+  }
+
   async function saveAgency() {
     if (!membership || !isAdmin) return;
     setSaving(true);
     const { error } = await supabase.from('agencies').update(agency).eq('id', membership.agency_id);
+    if (!error) await recordAudit('agency_profile_updated', 'agency', { changed_fields: 'name,contact,address' });
     setSaving(false);
     toast(error ? 'Could not save agency details.' : 'Agency profile saved.', error ? 'error' : 'success');
   }
@@ -68,6 +74,7 @@ export function SettingsPage({ initialSection = 'profile' }: { initialSection?: 
     if (!membership || !isAdmin) return;
     setSaving(true);
     const { error } = await supabase.from('agency_payment_settings').upsert({ ...payments, agency_id: membership.agency_id, updated_at: new Date().toISOString() }, { onConflict: 'agency_id' });
+    if (!error) await recordAudit('payment_settings_updated', 'agency_payment_settings', { invoice_prefix: payments.invoice_prefix, payment_terms: payments.default_payment_terms });
     setSaving(false);
     toast(error ? 'Could not save payment settings.' : 'Payment settings saved.', error ? 'error' : 'success');
   }
@@ -121,7 +128,7 @@ function PaymentsSection({ payments, setPayments, isAdmin, saving, onSave }: { p
 }
 
 function PreferencesSection({ profile, setProfile, saving, onSave }: { profile: Profile; setProfile: (profile: Profile) => void; saving: boolean; onSave: () => void }) {
-  return <div><SectionHeader title="Preferences" description="Manage how your workspace looks and behaves." /><div className="max-w-3xl divide-y divide-slate-200 rounded-xl border border-slate-200"><PreferenceRow title="Show Overview" description="Display the summary of created tasks by users." checked={profile.preferences.show_overview} onChange={(checked) => setProfile({ ...profile, preferences: { ...profile.preferences, show_overview: checked } })} /><PreferenceRow title="Show Today's Tasks" description="Display the list of tasks due today." checked={profile.preferences.show_today_tasks} onChange={(checked) => setProfile({ ...profile, preferences: { ...profile.preferences, show_today_tasks: checked } })} /></div><SaveButton saving={saving} onSave={onSave} /></div>;
+  return <div><SectionHeader title="Preferences" description="Manage how your workspace looks and behaves." /><div className="max-w-3xl rounded-xl border border-slate-200"><div className="border-b border-slate-200 p-5"><p className="text-sm font-semibold text-slate-800">Action Centre</p><p className="mt-1 text-sm text-slate-500">Control which sections appear on your Action Centre page.</p></div><div className="divide-y divide-slate-200"><PreferenceRow title="Show Overview" description="Display the summary of created tasks by users." checked={profile.preferences.show_overview} onChange={(checked) => setProfile({ ...profile, preferences: { ...profile.preferences, show_overview: checked } })} /><PreferenceRow title="Show Today's Tasks" description="Display the list of tasks due today." checked={profile.preferences.show_today_tasks} onChange={(checked) => setProfile({ ...profile, preferences: { ...profile.preferences, show_today_tasks: checked } })} /></div></div><SaveButton saving={saving} onSave={onSave} /></div>;
 }
 function PreferenceRow({ title, description, checked, onChange }: { title: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) { return <label className="flex cursor-pointer items-center justify-between gap-4 p-5"><span><span className="block text-sm font-semibold text-slate-800">{title}</span><span className="mt-1 block text-sm text-slate-500">{description}</span></span><button type="button" onClick={() => onChange(!checked)} className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-blue-600' : 'bg-slate-300'}`} aria-pressed={checked}><span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${checked ? 'left-6' : 'left-1'}`} /></button></label>; }
 function Notice({ children }: { children: string }) { return <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{children}</div>; }

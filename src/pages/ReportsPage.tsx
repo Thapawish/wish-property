@@ -25,6 +25,12 @@ export function ReportsPage({ section = 'snapshot' }: { section?: ReportSection 
   const [activeSection, setActiveSection] = useState<ReportSection>(section);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [filterBy, setFilterBy] = useState('status');
+  const [filterId, setFilterId] = useState('');
+  const [appliedFilterBy, setAppliedFilterBy] = useState('status');
+  const [appliedFilterId, setAppliedFilterId] = useState('');
+  const [appliedFromDate, setAppliedFromDate] = useState('');
+  const [appliedToDate, setAppliedToDate] = useState('');
 
   useEffect(() => {
     if (!membership?.agency_id) return;
@@ -46,7 +52,15 @@ export function ReportsPage({ section = 'snapshot' }: { section?: ReportSection 
     setActiveSection(section);
   }, [section]);
 
-  const filteredPayments = useMemo(() => data.payments.filter((payment) => (!fromDate || payment.due_date >= fromDate) && (!toDate || payment.due_date <= toDate)), [data.payments, fromDate, toDate]);
+  const filteredPayments = useMemo(() => data.payments.filter((payment) => {
+    const matchesDate = (!appliedFromDate || payment.due_date >= appliedFromDate) && (!appliedToDate || payment.due_date <= appliedToDate);
+    if (!appliedFilterId.trim()) return matchesDate;
+    const query = appliedFilterId.trim().toLowerCase();
+    const lease = data.leases.find((item) => item.id === payment.lease_id);
+    const property = data.properties.find((item) => item.id === lease?.property_id);
+    const value = appliedFilterBy === 'property' ? property?.address ?? '' : appliedFilterBy === 'method' ? payment.method ?? '' : payment.status;
+    return matchesDate && value.toLowerCase().includes(query);
+  }), [data, appliedFromDate, appliedToDate, appliedFilterBy, appliedFilterId]);
   const income = filteredPayments.filter((payment) => payment.status === 'paid').reduce((total, payment) => total + Number(payment.amount), 0);
   const outstanding = filteredPayments.filter((payment) => payment.status !== 'paid').reduce((total, payment) => total + Number(payment.amount), 0);
   const activeLeases = data.leases.filter((lease) => lease.status === 'active');
@@ -74,11 +88,20 @@ export function ReportsPage({ section = 'snapshot' }: { section?: ReportSection 
           <button onClick={exportData} className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"><Download className="h-4 w-4" /> Export Excel</button>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2">
-          {sections.map((item) => <button key={item.key} onClick={() => setActiveSection(item.key)} className={`rounded-lg px-4 py-2 text-sm font-medium transition ${activeSection === item.key ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>{item.label}</button>)}
-          <div className="ml-auto flex items-center gap-2">
-            <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-600" aria-label="From date" />
-            <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-600" aria-label="To date" />
+        <div className="mb-5 rounded-xl border border-slate-200 bg-white p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {sections.map((item) => <button key={item.key} onClick={() => setActiveSection(item.key)} className={`rounded-lg px-4 py-2 text-sm font-medium transition ${activeSection === item.key ? 'bg-blue-100 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>{item.label}</button>)}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+            <select value={filterBy} onChange={(event) => setFilterBy(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-600" aria-label="Filter by">
+              <option value="status">Filter by status</option><option value="property">Filter by property</option><option value="method">Filter by method</option>
+            </select>
+            <input value={filterId} onChange={(event) => setFilterId(event.target.value)} placeholder="Filter ID" className="h-9 w-40 rounded-lg border border-slate-200 px-3 text-xs text-slate-600 placeholder:text-slate-400" aria-label="Filter value" />
+            <select className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-600" aria-label="Period"><option>Period</option><option>Current period</option><option>Previous period</option></select>
+            <span className="text-xs text-slate-500">From</span><input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-600" aria-label="From date" />
+            <span className="text-xs text-slate-500">To</span><input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-600" aria-label="To date" />
+            <button onClick={() => { setFilterBy('status'); setFilterId(''); setFromDate(''); setToDate(''); setAppliedFilterBy('status'); setAppliedFilterId(''); setAppliedFromDate(''); setAppliedToDate(''); }} className="ml-auto px-3 py-2 text-xs font-medium text-blue-700 hover:text-blue-900">Clear All</button>
+            <button onClick={() => { setAppliedFilterBy(filterBy); setAppliedFilterId(filterId); setAppliedFromDate(fromDate); setAppliedToDate(toDate); }} className="rounded-lg bg-blue-600 px-5 py-2 text-xs font-medium text-white transition hover:bg-blue-700">Filter</button>
           </div>
         </div>
 
@@ -107,7 +130,8 @@ function GainLoss({ properties, income, outstanding }: { properties: Property[];
 }
 
 function Financials({ payments, income, outstanding }: { payments: Payment[]; income: number; outstanding: number }) {
-  return <div id="financials" className="space-y-5"><div className="grid gap-4 sm:grid-cols-3"><StatCard label="Total income" value={formatCurrency(income)} detail="GST inclusive" icon={Wallet} tone="green" /><StatCard label="Total outstanding" value={formatCurrency(outstanding)} detail="Pending and overdue" icon={TrendingDown} tone="amber" /><StatCard label="Transactions" value={`${payments.length}`} detail="In selected period" icon={FileSpreadsheet} /></div><ReportPanel title="Agency Revenue"><ReportTable headers={['Tax Category', 'GST', 'Total Income', 'Actions']} rows={[['Management fees', '$0.00', formatCurrency(income), `${payments.filter((payment) => payment.status === 'paid').length}`], ['Total', '$0.00', formatCurrency(income), ''], ['Total transaction fees paid', '$0.00', '$0.00', '']]} /></ReportPanel><ReportPanel title="Agency Expenses"><ReportTable headers={['Tax Category', 'GST', 'Total Expenses', 'Actions']} rows={[['Total', '$0.00', '$0.00', ''], ['Total transaction fees paid', '$0.00', '$0.00', '']]} /></ReportPanel></div>;
+  const paidCount = payments.filter((payment) => payment.status === 'paid').length;
+  return <div id="financials" className="space-y-5"><ReportPanel title="Agency Revenue"><ReportTable headers={['Tax Category', 'GST', 'Total Income', 'Actions']} rows={[['Management fees', '$0.00', formatCurrency(income), `${paidCount}`], ['Total', '$0.00', formatCurrency(income), ''], ['Total transaction fees paid', '$0.00', '$0.00', '']]} /><div className="flex items-center justify-between border-t border-slate-100 px-3 pt-5 text-sm font-medium text-slate-700"><span>Final amount paid to bank account</span><span>{formatCurrency(income)}</span></div></ReportPanel><ReportPanel title="Agency Expenses"><ReportTable headers={['Tax Category', 'GST', 'Total Expenses', 'Actions']} rows={[['Total', '$0.00', '$0.00', ''], ['Total transaction fees paid', '$0.00', '$0.00', '']]} /></ReportPanel><div className="grid gap-4 sm:grid-cols-3"><StatCard label="Collected" value={formatCurrency(income)} detail="GST inclusive" icon={Wallet} tone="green" /><StatCard label="Outstanding" value={formatCurrency(outstanding)} detail="Pending and overdue" icon={TrendingDown} tone="amber" /><StatCard label="Transactions" value={`${payments.length}`} detail="In selected period" icon={FileSpreadsheet} /></div></div>;
 }
 
 function Efficiency({ properties, leases, payments }: { properties: Property[]; leases: Lease[]; payments: Payment[] }) {
