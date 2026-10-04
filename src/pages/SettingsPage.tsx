@@ -1,11 +1,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { Building2, Check, CreditCard, UserRound, SlidersHorizontal } from 'lucide-react';
+import { Building2, Check, CreditCard, UserRound, SlidersHorizontal, Users, Mail, Trash2, Plus, Clock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/Toast';
 import { Spinner } from '@/components/ui';
+import type { TeamInvite, TeamRole } from '@/lib/supabase';
 
-export type SettingsSection = 'profile' | 'agency' | 'payments' | 'preferences';
+export type SettingsSection = 'profile' | 'agency' | 'payments' | 'preferences' | 'team';
 
 type Profile = { id?: string; user_id: string; first_name: string; last_name: string; phone: string; preferences: { show_overview: boolean; show_today_tasks: boolean } };
 type PaymentSettings = { id?: string; agency_id: string; account_name: string; bank_name: string; bsb: string; account_number: string; invoice_prefix: string; default_payment_terms: number };
@@ -14,6 +15,7 @@ const tabs: { key: SettingsSection; label: string; icon: typeof UserRound }[] = 
   { key: 'profile', label: 'My Profile', icon: UserRound },
   { key: 'agency', label: 'Agency Profile', icon: Building2 },
   { key: 'payments', label: 'Payment Settings', icon: CreditCard },
+  { key: 'team', label: 'Team Members', icon: Users },
   { key: 'preferences', label: 'Preferences', icon: SlidersHorizontal },
 ];
 
@@ -102,6 +104,7 @@ export function SettingsPage({ initialSection = 'profile' }: { initialSection?: 
             {section === 'agency' && <AgencySection agency={agency} setAgency={setAgency} isAdmin={isAdmin} saving={saving} onSave={saveAgency} />}
             {section === 'payments' && <PaymentsSection payments={payments} setPayments={setPayments} isAdmin={isAdmin} saving={saving} onSave={savePayments} />}
             {section === 'preferences' && <PreferencesSection profile={profile} setProfile={setProfile} saving={saving} onSave={savePreferences} />}
+            {section === 'team' && <TeamMembersSection isAdmin={isAdmin} />}
           </div>
         </div>
       </div>
@@ -132,3 +135,233 @@ function PreferencesSection({ profile, setProfile, saving, onSave }: { profile: 
 }
 function PreferenceRow({ title, description, checked, onChange }: { title: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) { return <label className="flex cursor-pointer items-center justify-between gap-4 p-5"><span><span className="block text-sm font-semibold text-slate-800">{title}</span><span className="mt-1 block text-sm text-slate-500">{description}</span></span><button type="button" onClick={() => onChange(!checked)} className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? 'bg-blue-600' : 'bg-slate-300'}`} aria-pressed={checked}><span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${checked ? 'left-6' : 'left-1'}`} /></button></label>; }
 function Notice({ children }: { children: string }) { return <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{children}</div>; }
+
+const TEAM_ROLES: { value: TeamRole; label: string; description: string }[] = [
+  { value: 'agency_admin', label: 'Agency Admin', description: 'Full access to all settings, team management, and data.' },
+  { value: 'property_manager', label: 'Property Manager', description: 'Manage properties, leases, contacts, and maintenance.' },
+  { value: 'leasing_consultant', label: 'Leasing Consultant', description: 'Manage leases and tenant communications.' },
+  { value: 'accounts_admin', label: 'Accounts Admin', description: 'Manage payments, invoices, and financial reports.' },
+];
+
+function TeamMembersSection({ isAdmin }: { isAdmin: boolean }) {
+  const { user, membership } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState<{ id: string; user_id: string; role: string; created_at: string; email: string }[]>([]);
+  const [invites, setInvites] = useState<TeamInvite[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<TeamRole>('property_manager');
+  const [busy, setBusy] = useState(false);
+  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [newRole, setNewRole] = useState<string>('');
+
+  async function loadData() {
+    if (!membership) return;
+    setLoading(true);
+    const [membersRes, invitesRes] = await Promise.all([
+      supabase.from('agency_members').select('*').eq('agency_id', membership.agency_id).order('created_at', { ascending: true }),
+      supabase.from('team_invites').select('*').eq('agency_id', membership.agency_id).order('created_at', { ascending: false }),
+    ]);
+    const memberRows = (membersRes.data ?? []) as { id: string; user_id: string; role: string; created_at: string }[];
+    const memberWithEmails = await Promise.all(
+      memberRows.map(async (m) => {
+        const { data } = await supabase.from('user_profiles').select('first_name, last_name').eq('user_id', m.user_id).maybeSingle();
+        const name = data ? `${data.first_name} ${data.last_name}`.trim() : m.user_id.slice(0, 8);
+        return { ...m, email: name };
+      })
+    );
+    setMembers(memberWithEmails);
+    setInvites((invitesRes.data ?? []) as TeamInvite[]);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadData(); }, [membership?.agency_id]);
+
+  async function sendInvite(e: React.FormEvent) {
+    e.preventDefault();
+    if (!membership || !user) return;
+    if (!inviteEmail.trim()) return;
+    setBusy(true);
+    const { error } = await supabase.from('team_invites').insert({
+      agency_id: membership.agency_id,
+      email: inviteEmail.trim().toLowerCase(),
+      role: inviteRole,
+      invited_by: user.id,
+    });
+    if (error) {
+      toast('Could not send invite. That email may already have a pending invite.', 'error');
+    } else {
+      toast(`Invitation sent to ${inviteEmail.trim()}.`, 'success');
+      setInviteEmail('');
+      setInviteRole('property_manager');
+      loadData();
+    }
+    setBusy(false);
+  }
+
+  async function cancelInvite(id: string) {
+    if (!confirm('Cancel this invitation?')) return;
+    await supabase.from('team_invites').delete().eq('id', id);
+    toast('Invitation cancelled.', 'info');
+    loadData();
+  }
+
+  async function updateMemberRole(memberId: string, role: string) {
+    const { error } = await supabase.from('agency_members').update({ role }).eq('id', memberId);
+    if (error) {
+      toast('Could not update role.', 'error');
+    } else {
+      toast('Team member role updated.', 'success');
+      setEditingRole(null);
+      loadData();
+    }
+  }
+
+  async function removeMember(memberId: string, memberIdUserId: string) {
+    if (memberIdUserId === user?.id) {
+      toast('You cannot remove yourself. Ask another admin to do this.', 'error');
+      return;
+    }
+    if (!confirm('Remove this team member from the agency?')) return;
+    const { error } = await supabase.from('agency_members').delete().eq('id', memberId);
+    if (error) {
+      toast('Could not remove team member.', 'error');
+    } else {
+      toast('Team member removed.', 'success');
+      loadData();
+    }
+  }
+
+  if (loading) return <Spinner variant="light" />;
+
+  return (
+    <div>
+      <SectionHeader title="Team Members" description="Invite staff to your agency and manage their access roles." />
+      {!isAdmin && <Notice>Only agency administrators can invite and manage team members.</Notice>}
+
+      {isAdmin && (
+        <form onSubmit={sendInvite} className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
+          <p className="mb-4 text-sm font-semibold text-slate-800">Invite a new team member</p>
+          <div className="grid gap-3 sm:grid-cols-[1fr_200px_auto]">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">Email address</label>
+              <input
+                type="email"
+                required
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="colleague@agency.com.au"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">Role</label>
+              <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as TeamRole)} className={inputClass}>
+                {TEAM_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60">
+                <Plus className="h-4 w-4" /> Send Invite
+              </button>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">{TEAM_ROLES.find((r) => r.value === inviteRole)?.description}</p>
+        </form>
+      )}
+
+      {invites.length > 0 && (
+        <div className="mb-8">
+          <h3 className="mb-3 text-sm font-semibold text-slate-700">Pending Invitations</h3>
+          <div className="space-y-2">
+            {invites.map((invite) => (
+              <div key={invite.id} className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-4 w-4 text-amber-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{invite.email}</p>
+                    <p className="text-xs text-slate-500">Invited as {TEAM_ROLES.find((r) => r.value === invite.role)?.label ?? invite.role}</p>
+                  </div>
+                </div>
+                {isAdmin && (
+                  <button onClick={() => cancelInvite(invite.id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <h3 className="mb-3 text-sm font-semibold text-slate-700">Current Team ({members.length})</h3>
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          <table className="w-full text-left">
+            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th className="px-4 py-3">Member</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Joined</th>
+                {isAdmin && <th className="px-4 py-3 text-right">Actions</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {members.map((m) => (
+                <tr key={m.id} className="text-sm">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-medium text-blue-600">
+                        {m.email.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-800">{m.email}</p>
+                        {m.user_id === user?.id && <p className="text-xs text-slate-400">You</p>}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {isAdmin && m.user_id !== user?.id && editingRole === m.id ? (
+                      <div className="flex items-center gap-2">
+                        <select value={newRole} onChange={(e) => setNewRole(e.target.value)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700">
+                          {TEAM_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                        </select>
+                        <button onClick={() => updateMemberRole(m.id, newRole)} className="text-xs font-medium text-blue-600 hover:text-blue-800">Save</button>
+                        <button onClick={() => setEditingRole(null)} className="text-xs text-slate-500 hover:text-slate-700">Cancel</button>
+                      </div>
+                    ) : (
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          m.role === 'agency_admin' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {TEAM_ROLES.find((r) => r.value === m.role)?.label ?? m.role.replace('_', ' ')}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">{new Date(m.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                  {isAdmin && (
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {m.user_id !== user?.id && editingRole !== m.id && (
+                          <button onClick={() => { setEditingRole(m.id); setNewRole(m.role); }} className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                            <Mail className="h-4 w-4" />
+                          </button>
+                        )}
+                        {m.user_id !== user?.id && (
+                          <button onClick={() => removeMember(m.id, m.user_id)} className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

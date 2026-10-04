@@ -34,6 +34,20 @@ export type AgencyMember = {
   created_at: string;
 };
 
+export type TeamInvite = {
+  id: string;
+  agency_id: string;
+  email: string;
+  role: string;
+  invited_by: string;
+  status: 'pending' | 'accepted';
+  accepted_by: string | null;
+  accepted_at: string | null;
+  created_at: string;
+};
+
+export type TeamRole = 'agency_admin' | 'property_manager' | 'leasing_consultant' | 'accounts_admin';
+
 export type ContactType = 'landlord' | 'tenant' | 'service_provider';
 export type ServiceProviderSpecialty = 'Electrician' | 'Plumber' | 'Carpenter' | 'Painter' | 'Locksmith' | 'Cleaner' | 'Gardener' | 'Pest Control' | 'Air Conditioning' | 'Roofing' | 'Plasterer' | 'Tiler' | 'Other';
 

@@ -1,8 +1,43 @@
 import { useState } from 'react';
-import { Building2, Loader2 } from 'lucide-react';
+import { Building2, Loader2, Mail, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { slugify } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
+
+async function acceptPendingInvites(userId: string, email: string) {
+  const { data: invites } = await supabase
+    .from('team_invites')
+    .select('*')
+    .eq('email', email.toLowerCase())
+    .eq('status', 'pending');
+  if (!invites || invites.length === 0) return false;
+  for (const invite of invites) {
+    await supabase.from('agency_members').insert({
+      agency_id: invite.agency_id,
+      user_id: userId,
+      role: invite.role,
+    });
+    await supabase.from('team_invites').update({
+      status: 'accepted',
+      accepted_by: userId,
+      accepted_at: new Date().toISOString(),
+    }).eq('id', invite.id);
+  }
+  return true;
+}
+
+async function checkPendingInvite(email: string): Promise<{ role: string; agency_name: string } | null> {
+  const { data } = await supabase
+    .from('team_invites')
+    .select('role, agencies(name)')
+    .eq('email', email.toLowerCase())
+    .eq('status', 'pending')
+    .maybeSingle();
+  if (data) {
+    return { role: (data as { role: string; agencies: { name: string } }).role, agency_name: (data as { role: string; agencies: { name: string } }).agencies?.name ?? 'an agency' };
+  }
+  return null;
+}
 
 export function AuthPage() {
   const { refreshMembership } = useAuth();
@@ -12,6 +47,15 @@ export function AuthPage() {
   const [agencyName, setAgencyName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingInvite, setPendingInvite] = useState<{ role: string; agency_name: string } | null>(null);
+  const [emailChecked, setEmailChecked] = useState(false);
+
+  async function handleEmailBlur() {
+    if (!email.trim()) return;
+    const invite = await checkPendingInvite(email);
+    setPendingInvite(invite);
+    setEmailChecked(true);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,34 +64,33 @@ export function AuthPage() {
 
     try {
       if (mode === 'signup') {
-        if (!agencyName.trim()) {
-          setError('Please enter your agency name.');
-          setBusy(false);
-          return;
-        }
         const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
         if (signUpError) throw signUpError;
         if (!data.user) throw new Error('Sign-up failed. Please try again.');
 
-        const slug = slugify(agencyName) + '-' + data.user.id.slice(0, 6);
+        const joinedExisting = await acceptPendingInvites(data.user.id, email);
 
-        const { data: agency, error: agencyError } = await supabase
-          .from('agencies')
-          .insert({ name: agencyName.trim(), slug })
-          .select()
-          .single();
-
-        if (agencyError) throw agencyError;
-
-        const { error: memberError } = await supabase.from('agency_members').insert({
-          agency_id: agency.id,
-          user_id: data.user.id,
-          role: 'agency_admin',
-        });
-
-        if (memberError) throw memberError;
-
-        await seedSampleData(agency.id);
+        if (!joinedExisting) {
+          if (!agencyName.trim()) {
+            setError('Please enter your agency name.');
+            setBusy(false);
+            return;
+          }
+          const slug = slugify(agencyName) + '-' + data.user.id.slice(0, 6);
+          const { data: agency, error: agencyError } = await supabase
+            .from('agencies')
+            .insert({ name: agencyName.trim(), slug })
+            .select()
+            .single();
+          if (agencyError) throw agencyError;
+          const { error: memberError } = await supabase.from('agency_members').insert({
+            agency_id: agency.id,
+            user_id: data.user.id,
+            role: 'agency_admin',
+          });
+          if (memberError) throw memberError;
+          await seedSampleData(agency.id);
+        }
 
         await supabase.auth.signInWithPassword({ email, password });
         await refreshMembership();
@@ -95,7 +138,7 @@ export function AuthPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === 'signup' && (
+            {mode === 'signup' && !pendingInvite && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Agency Name</label>
                 <input
@@ -107,12 +150,22 @@ export function AuthPage() {
                 />
               </div>
             )}
+            {mode === 'signup' && pendingInvite && (
+              <div className="rounded-lg border border-teal-500/30 bg-teal-500/10 px-4 py-3 text-sm text-teal-300 flex items-start gap-3">
+                <Mail className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">You have been invited to join {pendingInvite.agency_name}</p>
+                  <p className="mt-1 text-teal-400/80">Your account will be linked to this agency as {pendingInvite.role.replace('_', ' ')} when you sign up. No agency name needed.</p>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setEmailChecked(false); setPendingInvite(null); }}
+                onBlur={handleEmailBlur}
                 placeholder="you@agency.com.au"
                 className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
@@ -140,7 +193,7 @@ export function AuthPage() {
               className="w-full py-2.5 bg-teal-500 hover:bg-teal-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
             >
               {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-              {mode === 'signin' ? 'Sign In' : 'Create Agency & Sign In'}
+              {mode === 'signin' ? 'Sign In' : (pendingInvite ? 'Join Team & Sign In' : 'Create Agency & Sign In')}
             </button>
           </form>
         </div>
