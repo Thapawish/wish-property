@@ -34,7 +34,8 @@ export type AgencyMember = {
   created_at: string;
 };
 
-export type ContactType = 'landlord' | 'tenant';
+export type ContactType = 'landlord' | 'tenant' | 'service_provider';
+export type ServiceProviderSpecialty = 'Electrician' | 'Plumber' | 'Carpenter' | 'Painter' | 'Locksmith' | 'Cleaner' | 'Gardener' | 'Pest Control' | 'Air Conditioning' | 'Roofing' | 'Plasterer' | 'Tiler' | 'Other';
 
 export type Contact = {
   id: string;
@@ -44,6 +45,12 @@ export type Contact = {
   last_name: string;
   email: string | null;
   phone: string | null;
+  specialty: string | null;
+  business_name: string | null;
+  bank_account_name: string | null;
+  bank_bsb: string | null;
+  bank_account_number: string | null;
+  bank_name: string | null;
   created_at: string;
 };
 
