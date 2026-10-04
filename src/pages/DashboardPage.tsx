@@ -11,6 +11,9 @@ import {
   CheckCircle2,
   Clock3,
   SlidersHorizontal,
+  TrendingUp,
+  Wrench,
+  X,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
@@ -70,6 +73,7 @@ export function DashboardPage() {
   const [search, setSearch] = useState('');
   const [period, setPeriod] = useState('days');
   const [showCompliance, setShowCompliance] = useState(true);
+  const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
 
   useEffect(() => {
     if (!membership?.agency_id) return;
@@ -239,6 +243,34 @@ export function DashboardPage() {
           {search && <button onClick={() => setSearch('')} className="text-xs font-medium text-blue-600 hover:text-blue-700">Clear search</button>}
           <span className="ml-auto text-xs text-slate-500">Showing {filteredProperties.length} of {properties.length} properties</span>
         </div>
+
+        {(() => {
+          const overduePayments = payments.filter((p) => p.status === 'overdue');
+          const expiringLeases = summary.expiring_leases.filter((l) => l.days_remaining <= 30);
+          const pendingReviews = rentReviews.filter((r) => r.status === 'pending');
+          type AlertItem = { id: string; icon: React.ReactNode; iconBg: string; title: string; detail: string; count: number };
+          const alerts: AlertItem[] = [];
+          if (overduePayments.length > 0) alerts.push({ id: 'overdue-rent', icon: <AlertTriangle className="h-5 w-5" />, iconBg: 'bg-red-50 text-red-600', title: 'Overdue rent', detail: `${overduePayments.length} ${overduePayments.length === 1 ? 'payment is' : 'payments are'} overdue totalling ${formatCurrency(overduePayments.reduce((t, p) => t + Number(p.amount), 0))}`, count: overduePayments.length });
+          if (expiringLeases.length > 0) alerts.push({ id: 'expiring-leases', icon: <CalendarDays className="h-5 w-5" />, iconBg: 'bg-amber-50 text-amber-600', title: 'Leases expiring soon', detail: `${expiringLeases.length} ${expiringLeases.length === 1 ? 'lease expires' : 'leases expire'} within 30 days`, count: expiringLeases.length });
+          if (pendingReviews.length > 0) alerts.push({ id: 'pending-reviews', icon: <TrendingUp className="h-5 w-5" />, iconBg: 'bg-blue-50 text-blue-600', title: 'Pending rent reviews', detail: `${pendingReviews.length} rent ${pendingReviews.length === 1 ? 'review' : 'reviews'} awaiting approval`, count: pendingReviews.length });
+          const visible = alerts.filter((a) => !dismissedAlerts.includes(a.id));
+          if (visible.length === 0) return null;
+          return (
+            <div className="mb-4 space-y-2">
+              {visible.map((alert) => (
+                <div key={alert.id} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${alert.iconBg}`}>{alert.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800">{alert.title}</p>
+                    <p className="text-xs text-slate-500">{alert.detail}</p>
+                  </div>
+                  <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-bold text-slate-600">{alert.count}</span>
+                  <button onClick={() => setDismissedAlerts((prev) => [...prev, alert.id])} className="text-slate-300 hover:text-slate-600 transition"><X className="h-4 w-4" /></button>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         <div className="grid gap-3 xl:grid-cols-3">
           <ChartCard title="Arrears" className="xl:col-span-2">

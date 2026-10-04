@@ -15,10 +15,11 @@ import {
   BarChart3,
   ChevronDown,
   Settings,
+  CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance' | 'reports-snapshot' | 'reports-gain-loss' | 'reports-financials' | 'reports-efficiency' | 'reports-data' | 'settings-profile' | 'settings-agency' | 'settings-payments' | 'settings-preferences';
+export type PageKey = 'dashboard' | 'action-center' | 'properties' | 'leases' | 'contacts' | 'payments' | 'rent-reviews' | 'maintenance' | 'calendar' | 'reports-snapshot' | 'reports-gain-loss' | 'reports-financials' | 'reports-efficiency' | 'reports-data' | 'settings-profile' | 'settings-agency' | 'settings-payments' | 'settings-team' | 'settings-preferences';
 
 const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: string }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, shortLabel: 'Home' },
@@ -29,12 +30,14 @@ const NAV_ITEMS: { key: PageKey; label: string; icon: typeof Home; shortLabel: s
   { key: 'payments', label: 'Payments', icon: DollarSign, shortLabel: 'Payments' },
   { key: 'rent-reviews', label: 'Rent Reviews', icon: TrendingUp, shortLabel: 'Reviews' },
   { key: 'maintenance', label: 'Maintenance', icon: Wrench, shortLabel: 'System' },
+  { key: 'calendar', label: 'Calendar', icon: CalendarDays, shortLabel: 'Calendar' },
 ];
 
 const SETTINGS_SUB_ITEMS: { key: PageKey; label: string }[] = [
   { key: 'settings-profile', label: 'My Profile' },
   { key: 'settings-agency', label: 'Agency Profile' },
   { key: 'settings-payments', label: 'Payment Settings' },
+  { key: 'settings-team', label: 'Team Members' },
   { key: 'settings-preferences', label: 'Preferences' },
 ];
 
@@ -55,6 +58,7 @@ const PAGE_LABELS: Record<PageKey, string> = {
   payments: 'Payments',
   'rent-reviews': 'Rent Reviews',
   maintenance: 'Maintenance',
+  calendar: 'Calendar',
   'reports-snapshot': 'Reports — Snapshot',
   'reports-gain-loss': 'Reports — Gain/Lost',
   'reports-financials': 'Reports — Financials',
@@ -63,6 +67,7 @@ const PAGE_LABELS: Record<PageKey, string> = {
   'settings-profile': 'Settings — My Profile',
   'settings-agency': 'Settings — Agency Profile',
   'settings-payments': 'Settings — Payment Settings',
+  'settings-team': 'Settings — Team Members',
   'settings-preferences': 'Settings — Preferences',
 };
 

@@ -16,6 +16,7 @@ import { MaintenancePage } from '@/pages/MaintenancePage';
 import { ActionCenterPage } from '@/pages/ActionCenterPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { CalendarPage } from '@/pages/CalendarPage';
 import { Spinner } from '@/components/ui';
 
 function OfflineBanner() {
@@ -87,6 +88,7 @@ function AppContent() {
         {page === 'payments' && <PaymentsPage />}
         {page === 'rent-reviews' && <RentReviewsPage />}
         {page === 'maintenance' && <MaintenancePage />}
+        {page === 'calendar' && <CalendarPage />}
         {page === 'reports-snapshot' && <ReportsPage section="snapshot" />}
         {page === 'reports-gain-loss' && <ReportsPage section="gain-loss" />}
         {page === 'reports-financials' && <ReportsPage section="financials" />}
@@ -96,6 +98,7 @@ function AppContent() {
         {page === 'settings-agency' && <SettingsPage initialSection="agency" />}
         {page === 'settings-payments' && <SettingsPage initialSection="payments" />}
         {page === 'settings-preferences' && <SettingsPage initialSection="preferences" />}
+        {page === 'settings-team' && <SettingsPage initialSection="team" />}
       </AppShell>
       <TokenExpiredPrompt />
     </>
