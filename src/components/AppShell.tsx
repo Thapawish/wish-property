@@ -16,6 +16,7 @@ import {
   ChevronDown,
   Settings,
   CalendarDays,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -78,6 +79,19 @@ const MOBILE_NAV: { key: PageKey; icon: typeof Home; shortLabel: string }[] = [
   { key: 'payments', icon: DollarSign, shortLabel: 'Payments' },
 ];
 
+const QUICK_NAV: { key: PageKey; label: string; icon: typeof Home; keywords: string[] }[] = [
+  { key: 'properties', label: 'Properties', icon: Home, keywords: ['property', 'properties', 'address', 'house', 'apartment', 'unit'] },
+  { key: 'leases', label: 'Leases', icon: FileText, keywords: ['lease', 'leases', 'tenancy', 'agreement'] },
+  { key: 'contacts', label: 'Contacts', icon: Users, keywords: ['contact', 'contacts', 'landlord', 'tenant', 'people'] },
+  { key: 'payments', label: 'Payments', icon: DollarSign, keywords: ['payment', 'payments', 'rent', 'arrears', 'invoice'] },
+  { key: 'rent-reviews', label: 'Rent Reviews', icon: TrendingUp, keywords: ['rent review', 'review', 'increase'] },
+  { key: 'maintenance', label: 'Maintenance', icon: Wrench, keywords: ['maintenance', 'backup', 'system', 'api'] },
+  { key: 'calendar', label: 'Calendar', icon: CalendarDays, keywords: ['calendar', 'schedule', 'events'] },
+  { key: 'action-center', label: 'Action Centre', icon: Zap, keywords: ['action', 'actions', 'tasks', 'pending'] },
+  { key: 'reports-snapshot', label: 'Reports', icon: BarChart3, keywords: ['report', 'reports', 'snapshot', 'financials'] },
+  { key: 'settings-profile', label: 'Settings', icon: Settings, keywords: ['settings', 'profile', 'preferences', 'team'] },
+];
+
 export function AppShell({
   current,
   onNavigate,
@@ -91,10 +105,19 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const isReportsActive = current.startsWith('reports-');
   const isSettingsActive = current.startsWith('settings-');
 
   const agency = membership?.agencies;
+
+  const searchResults = searchQuery.trim()
+    ? QUICK_NAV.filter((item) => {
+        const q = searchQuery.toLowerCase();
+        return item.label.toLowerCase().includes(q) || item.keywords.some((kw) => kw.includes(q));
+      }).slice(0, 6)
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-100 flex">
@@ -239,9 +262,42 @@ export function AppShell({
           >
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="text-lg font-semibold text-slate-900 capitalize hidden sm:block">
+          <h1 className="text-lg font-semibold text-slate-900 capitalize hidden md:block">
             {PAGE_LABELS[current]}
           </h1>
+          <div className="relative flex-1 max-w-md mx-4 hidden md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
+              placeholder="Search pages, properties, leases..."
+              className="w-full h-9 pl-9 pr-3 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
+            />
+            {searchFocused && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden z-50">
+                {searchResults.map((result) => {
+                  const Icon = result.icon;
+                  return (
+                    <button
+                      key={result.key}
+                      onMouseDown={() => { onNavigate(result.key); setSearchQuery(''); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition text-left"
+                    >
+                      <Icon className="h-4 w-4 text-slate-400" />
+                      <span className="text-sm text-slate-700">{result.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {searchFocused && searchQuery.trim() && searchResults.length === 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg border border-slate-200 shadow-lg px-4 py-3 z-50">
+                <p className="text-sm text-slate-400">No matches found</p>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-slate-700 text-sm font-medium leading-tight">{agency?.name}</p>

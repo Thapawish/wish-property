@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DollarSign, Plus, Check, Clock, AlertTriangle, TrendingUp, Download } from 'lucide-react';
+import { DollarSign, Plus, Check, Clock, AlertTriangle, TrendingUp, Download, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/Toast';
@@ -21,6 +21,8 @@ export function PaymentsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const { toast } = useToast();
 
@@ -48,6 +50,39 @@ export function PaymentsPage() {
       toast('Payment marked as paid.', 'success');
       loadData();
     }
+  }
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllVisible() {
+    const unpaid = filtered.filter((p) => p.status !== 'paid').map((p) => p.id);
+    setSelected((prev) => {
+      const allSelected = unpaid.every((id) => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) unpaid.forEach((id) => next.delete(id));
+      else unpaid.forEach((id) => next.add(id));
+      return next;
+    });
+  }
+
+  async function bulkMarkPaid() {
+    setBulkBusy(true);
+    const ids = Array.from(selected);
+    const { error } = await supabase.from('payments').update({ status: 'paid', paid_date: new Date().toISOString().slice(0, 10) }).in('id', ids);
+    if (error) {
+      toast('Could not update payments. Please try again.', 'error');
+    } else {
+      toast(`${ids.length} payment${ids.length === 1 ? '' : 's'} marked as paid.`, 'success');
+      setSelected(new Set());
+      loadData();
+    }
+    setBulkBusy(false);
   }
 
   if (loading) return <Spinner />;
@@ -133,6 +168,31 @@ export function PaymentsPage() {
         })}
       </div>
 
+      {selected.size > 0 && (
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-blue-400" />
+            <span className="text-sm font-medium text-slate-200">{selected.size} selected</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={bulkMarkPaid}
+              disabled={bulkBusy}
+              className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-sm font-medium rounded-lg transition disabled:opacity-50"
+            >
+              {bulkBusy ? <Clock className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              Mark all as paid
+            </button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="px-3 py-1.5 text-slate-400 hover:text-slate-200 text-sm font-medium rounded-lg transition"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       <SearchToolbar
         search={search}
         onSearchChange={setSearch}
@@ -157,6 +217,14 @@ export function PaymentsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-800 text-left">
+                  <th className="px-3 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && filtered.filter((p) => p.status !== 'paid').every((p) => selected.has(p.id))}
+                      onChange={toggleAllVisible}
+                      className="w-4 h-4 rounded accent-teal-500"
+                    />
+                  </th>
                   <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Property</th>
                   <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Due Date</th>
                   <th className="px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Amount</th>
@@ -171,7 +239,17 @@ export function PaymentsPage() {
                   const prop = lease ? properties.find((p) => p.id === lease.property_id) : null;
                   const overdueDays = payment.status === 'overdue' ? daysSince(payment.due_date) : 0;
                   return (
-                    <tr key={payment.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition group">
+                    <tr key={payment.id} className={`border-b border-slate-800/50 hover:bg-slate-800/30 transition group ${selected.has(payment.id) ? 'bg-blue-500/5' : ''}`}>
+                      <td className="px-3 py-4">
+                        {payment.status !== 'paid' && (
+                          <input
+                            type="checkbox"
+                            checked={selected.has(payment.id)}
+                            onChange={() => toggleSelected(payment.id)}
+                            className="w-4 h-4 rounded accent-teal-500"
+                          />
+                        )}
+                      </td>
                       <td className="px-5 py-4">
                         <p className="text-slate-200 text-sm font-medium">{prop?.address ?? 'Unknown'}</p>
                         {payment.reference && <p className="text-slate-500 text-xs">{payment.reference}</p>}

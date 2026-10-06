@@ -18,7 +18,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { formatCurrency, formatDate, daysUntil } from '@/lib/format';
-import { Badge, Spinner, statusColor } from '@/components/ui';
+import { Badge, Skeleton, statusColor } from '@/components/ui';
 import type { Lease, Payment, Property, RentReview } from '@/lib/supabase';
 
 type DashboardSummary = {
@@ -161,7 +161,7 @@ export function DashboardPage() {
     return properties.filter((property) => [property.address, property.suburb, property.state, property.postcode].filter(Boolean).join(' ').toLowerCase().includes(query));
   }, [properties, search]);
 
-  if (loading || !summary) return <Spinner />;
+  if (loading || !summary) return <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8"><div className="mx-auto max-w-[1500px]"><Skeleton variant="light" /></div></div>;
 
   const s = summary.stats;
   const activeLeases = leases.filter((lease) => lease.status === 'active');

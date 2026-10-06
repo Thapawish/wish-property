@@ -15,7 +15,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { formatCurrency, formatDate, daysUntil } from '@/lib/format';
-import { Spinner } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import type { Lease, Payment, Property, PropertyForm, PropertyInspection, PropertyTask, RentReview } from '@/lib/supabase';
 
 type Priority = 'high' | 'medium' | 'low';
@@ -263,7 +263,7 @@ export function ActionCenterPage() {
     }
   }
 
-  if (loading) return <Spinner />;
+  if (loading) return <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8"><div className="mx-auto max-w-[1500px]"><Skeleton variant="light" /></div></div>;
 
   return (
     <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8">

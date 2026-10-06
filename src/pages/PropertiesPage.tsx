@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/Toast';
 import { SearchToolbar, uniqueSuburbs, type FilterOption } from '@/components/SearchToolbar';
 import { exportToCsv } from '@/lib/csv';
-import { Badge, EmptyState, Modal, PageHeader, Spinner, statusColor } from '@/components/ui';
+import { Badge, EmptyState, Modal, PageHeader, Skeleton, statusColor } from '@/components/ui';
 import { PropertyDetail } from '@/components/PropertyDetail';
 import type { Property, Contact } from '@/lib/supabase';
 
@@ -52,7 +52,7 @@ export function PropertiesPage() {
     }
   }
 
-  if (loading) return <Spinner variant="light" />;
+  if (loading) return <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8"><div className="mx-auto max-w-[1500px]"><Skeleton variant="light" /></div></div>;
 
   const statusOptions: FilterOption[] = [
     { label: 'All statuses', value: 'all' },

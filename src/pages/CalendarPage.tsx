@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, CalendarDays, FileText, DollarSign, Trending
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { formatCurrency, formatDate, daysUntil } from '@/lib/format';
-import { Badge, Spinner } from '@/components/ui';
+import { Badge, Skeleton } from '@/components/ui';
 import type { Lease, Payment, Property, RentReview, PropertyInspection } from '@/lib/supabase';
 
 type CalendarEvent = {
@@ -126,7 +126,7 @@ export function CalendarPage() {
 
   const selectedEvents = selectedDate ? eventsByDate[selectedDate] ?? [] : [];
 
-  if (loading) return <Spinner variant="light" />;
+  if (loading) return <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8"><div className="mx-auto max-w-[1500px]"><Skeleton variant="light" /></div></div>;
 
   const monthLabel = currentMonth.toLocaleString('en-AU', { month: 'long', year: 'numeric' });
   const typeCounts = events.reduce((acc, ev) => {
