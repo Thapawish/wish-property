@@ -13,9 +13,9 @@ export function SearchToolbar({
   statusFilters,
   statusValue,
   onStatusChange,
-  suburbFilters,
-  suburbValue,
-  onSuburbChange,
+  cityFilters,
+  cityValue,
+  onCityChange,
   dateFrom,
   dateTo,
   onDateFromChange,
@@ -30,9 +30,9 @@ export function SearchToolbar({
   statusFilters?: FilterOption[];
   statusValue?: string;
   onStatusChange?: (v: string) => void;
-  suburbFilters?: FilterOption[];
-  suburbValue?: string;
-  onSuburbChange?: (v: string) => void;
+  cityFilters?: FilterOption[];
+  cityValue?: string;
+  onCityChange?: (v: string) => void;
   dateFrom?: string;
   dateTo?: string;
   onDateFromChange?: (v: string) => void;
@@ -41,7 +41,7 @@ export function SearchToolbar({
   resultCount?: number;
   onClear?: () => void;
 }) {
-  const hasFilters = search || (statusValue && statusValue !== 'all') || (suburbValue && suburbValue !== 'all') || dateFrom || dateTo;
+  const hasFilters = search || (statusValue && statusValue !== 'all') || (cityValue && cityValue !== 'all') || dateFrom || dateTo;
   const selectCls = 'px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent';
   const inputCls = 'px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent';
 
@@ -80,10 +80,10 @@ export function SearchToolbar({
           </div>
         )}
 
-        {/* Suburb filter */}
-        {suburbFilters && onSuburbChange && (
-          <select value={suburbValue} onChange={(e) => onSuburbChange(e.target.value)} className={selectCls}>
-            {suburbFilters.map((f) => (
+        {/* City filter */}
+        {cityFilters && onCityChange && (
+          <select value={cityValue} onChange={(e) => onCityChange(e.target.value)} className={selectCls}>
+            {cityFilters.map((f) => (
               <option key={f.value} value={f.value}>{f.label}</option>
             ))}
           </select>
@@ -123,8 +123,8 @@ export function SearchToolbar({
   );
 }
 
-export function uniqueSuburbs(items: { suburb: string | null }[]): FilterOption[] {
+export function uniqueCities(items: { city: string | null }[]): FilterOption[] {
   const set = new Set<string>();
-  items.forEach((i) => { if (i.suburb) set.add(i.suburb); });
-  return [{ label: 'All suburbs', value: 'all' }, ...Array.from(set).sort().map((s) => ({ label: s, value: s }))];
+  items.forEach((i) => { if (i.city) set.add(i.city); });
+  return [{ label: 'All cities', value: 'all' }, ...Array.from(set).sort().map((s) => ({ label: s, value: s }))];
 }

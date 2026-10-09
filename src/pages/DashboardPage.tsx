@@ -40,7 +40,7 @@ type DashboardSummary = {
   expiring_leases: {
     lease_id: string;
     property_address: string;
-    property_suburb: string | null;
+    property_city: string | null;
     end_date: string;
     days_remaining: number;
     rent_amount: number;
@@ -116,7 +116,7 @@ export function DashboardPage() {
           return {
             lease_id: lease.id,
             property_address: property?.address ?? 'Unknown property',
-            property_suburb: property?.suburb ?? null,
+            property_city: property?.city ?? null,
             end_date: lease.end_date,
             days_remaining: daysUntil(lease.end_date),
             rent_amount: Number(lease.rent_amount),
@@ -158,7 +158,7 @@ export function DashboardPage() {
   const filteredProperties = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return properties;
-    return properties.filter((property) => [property.address, property.suburb, property.state, property.postcode].filter(Boolean).join(' ').toLowerCase().includes(query));
+    return properties.filter((property) => [property.address, property.city, property.district, property.tole].filter(Boolean).join(' ').toLowerCase().includes(query));
   }, [properties, search]);
 
   if (loading || !summary) return <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8"><div className="mx-auto max-w-[1500px]"><Skeleton variant="light" /></div></div>;

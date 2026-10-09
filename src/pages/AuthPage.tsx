@@ -145,7 +145,7 @@ export function AuthPage() {
                   type="text"
                   value={agencyName}
                   onChange={(e) => setAgencyName(e.target.value)}
-                  placeholder="e.g. Wish Real Estate Seven Hills"
+                  placeholder="e.g. Himalaya Property Management"
                   className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 />
               </div>
@@ -231,10 +231,10 @@ async function seedSampleData(agencyId: string) {
 
   const properties = [
     {
-      address: '12 Greystanes Parade',
-      suburb: 'Greystanes',
-      state: 'NSW',
-      postcode: '2145',
+      address: '12 Thamel Marg',
+      city: 'Kathmandu',
+      district: 'Kathmandu',
+      tole: 'Thamel',
       property_type: 'house',
       status: 'leased',
       bedrooms: 3,
@@ -243,10 +243,10 @@ async function seedSampleData(agencyId: string) {
       landlord_id: landlordRows[0].id,
     },
     {
-      address: '45 Seven Hills Road',
-      suburb: 'Seven Hills',
-      state: 'NSW',
-      postcode: '2147',
+      address: '45 Pulchowk Road',
+      city: 'Lalitpur',
+      district: 'Lalitpur',
+      tole: 'Pulchowk',
       property_type: 'house',
       status: 'leased',
       bedrooms: 4,
@@ -255,10 +255,10 @@ async function seedSampleData(agencyId: string) {
       landlord_id: landlordRows[0].id,
     },
     {
-      address: '8/120 Prospect Highway',
-      suburb: 'Prospect',
-      state: 'NSW',
-      postcode: '2148',
+      address: '8/120 Lakeside',
+      city: 'Pokhara',
+      district: 'Kaski',
+      tole: 'Lakeside',
       property_type: 'apartment',
       status: 'vacant',
       bedrooms: 2,
@@ -267,10 +267,10 @@ async function seedSampleData(agencyId: string) {
       landlord_id: landlordRows[1].id,
     },
     {
-      address: '23 Windsor Road',
-      suburb: 'Baulkham Hills',
-      state: 'NSW',
-      postcode: '2153',
+      address: '23 Baneshwor Marg',
+      city: 'Kathmandu',
+      district: 'Kathmandu',
+      tole: 'Baneshwor',
       property_type: 'townhouse',
       status: 'pending',
       bedrooms: 3,
@@ -294,8 +294,8 @@ async function seedSampleData(agencyId: string) {
       tenant_id: tenantRows[0].id,
       start_date: new Date(today.getTime() - 180 * 86400000).toISOString().slice(0, 10),
       end_date: new Date(today.getTime() + 185 * 86400000).toISOString().slice(0, 10),
-      rent_amount: 620,
-      bond_amount: 2480,
+      rent_amount: 45000,
+      bond_amount: 180000,
       status: 'active',
     },
     {
@@ -303,8 +303,8 @@ async function seedSampleData(agencyId: string) {
       tenant_id: tenantRows[1].id,
       start_date: new Date(today.getTime() - 300 * 86400000).toISOString().slice(0, 10),
       end_date: new Date(today.getTime() + 25 * 86400000).toISOString().slice(0, 10),
-      rent_amount: 780,
-      bond_amount: 3120,
+      rent_amount: 55000,
+      bond_amount: 220000,
       status: 'active',
     },
     {
@@ -312,8 +312,8 @@ async function seedSampleData(agencyId: string) {
       tenant_id: tenantRows[2].id,
       start_date: new Date(today.getTime() + 14 * 86400000).toISOString().slice(0, 10),
       end_date: new Date(today.getTime() + 379 * 86400000).toISOString().slice(0, 10),
-      rent_amount: 550,
-      bond_amount: 2200,
+      rent_amount: 35000,
+      bond_amount: 140000,
       status: 'pending',
     },
   ];
@@ -350,8 +350,8 @@ async function seedSampleData(agencyId: string) {
     {
       lease_id: leaseRows[0].id,
       review_date: new Date(today.getTime() + 14 * 86400000).toISOString().slice(0, 10),
-      current_rent: 620,
-      proposed_rent: 660,
+      current_rent: 45000,
+      proposed_rent: 48000,
       approved_rent: null,
       status: 'pending',
       notes: 'Annual review — market data suggests a modest increase is supportable.',
@@ -359,8 +359,8 @@ async function seedSampleData(agencyId: string) {
     {
       lease_id: leaseRows[1].id,
       review_date: new Date(today.getTime() - 10 * 86400000).toISOString().slice(0, 10),
-      current_rent: 780,
-      proposed_rent: 820,
+      current_rent: 55000,
+      proposed_rent: 58000,
       approved_rent: 820,
       status: 'approved',
       notes: 'Landlord approved. New rent applies from next cycle.',

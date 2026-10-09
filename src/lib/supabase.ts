@@ -20,6 +20,8 @@ export type Agency = {
   website: string | null;
   address: string | null;
   city: string | null;
+  district: string | null;
+  tole: string | null;
   state: string | null;
   postcode: string | null;
   abn: string | null;
@@ -68,12 +70,32 @@ export type Contact = {
   created_at: string;
 };
 
+export const NEPAL_DISTRICTS: string[] = [
+  'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Kaski', 'Chitwan', 'Morang', 'Sunsari', 'Jhapa',
+  'Rupandehi', 'Dang', 'Banke', 'Kailali', 'Kavrepalanchok', 'Nuwakot', 'Dhading',
+  'Sindhulpalchok', 'Makwanpur', 'Gorkha', 'Lamjung', 'Tanahun', 'Syangja', 'Palpa',
+  'Gulmi', 'Baglung', 'Parbat', 'Myagdi', 'Mustang', 'Dolakha', 'Sindhuli', 'Ramechhap',
+  'Okhaldhunga', 'Khotang', 'Udayapur', 'Siraha', 'Saptari', 'Dhanusa', 'Mahottari',
+  'Sarlahi', 'Bara', 'Parsa', 'Nawalpur', 'Tanahun', 'Ilam', 'Panchthar', 'Taplejung',
+  'Solukhumbu', 'Bhojpur', 'Terhathum', 'Dhankuta', 'Sankhuwasabha', 'Rasuwa', 'Sindhulpalchok',
+];
+
+export const NEPAL_CITIES: string[] = [
+  'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Pokhara', 'Biratnagar', 'Birgunj', 'Dharan',
+  'Butwal', 'Nepalgunj', 'Janakpur', 'Hetauda', 'Itahari', 'Nepalgunj', 'Gorkha',
+  'Damak', 'Lahan', 'Birtamod', 'Bhadrapur', 'Tulsipur', 'Tansen', 'Gaur', 'Rajbiraj',
+  'Kalaiya', 'Jaleshwar', 'Bandipur', 'Dhulikhel', 'Banepa', 'Panauti', 'Kirtipur',
+];
+
 export type PropertyStatus = 'leased' | 'vacant' | 'pending';
 
 export type Property = {
   id: string;
   agency_id: string;
   address: string;
+  city: string | null;
+  district: string | null;
+  tole: string | null;
   suburb: string | null;
   state: string | null;
   postcode: string | null;

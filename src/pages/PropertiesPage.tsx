@@ -3,7 +3,8 @@ import { Home, Plus, Pencil, Trash2, Bed, Bath, Car, Download, Grid3X3, List, Ma
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/Toast';
-import { SearchToolbar, uniqueSuburbs, type FilterOption } from '@/components/SearchToolbar';
+import { SearchToolbar, uniqueCities, type FilterOption } from '@/components/SearchToolbar';
+import { NEPAL_DISTRICTS, NEPAL_CITIES } from '@/lib/supabase';
 import { exportToCsv } from '@/lib/csv';
 import { Badge, EmptyState, Modal, PageHeader, Skeleton, statusColor } from '@/components/ui';
 import { PropertyDetail } from '@/components/PropertyDetail';
@@ -17,7 +18,7 @@ export function PropertiesPage() {
   const [landlords, setLandlords] = useState<Contact[]>([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
-  const [suburbFilter, setSuburbFilter] = useState('all');
+  const [cityFilter, setCityFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Property | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -60,15 +61,15 @@ export function PropertiesPage() {
     { label: 'Vacant', value: 'vacant' },
     { label: 'Pending', value: 'pending' },
   ];
-  const suburbOptions = uniqueSuburbs(properties);
+  const cityOptions = uniqueCities(properties);
 
   const filtered = properties.filter((p) => {
     if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-    if (suburbFilter !== 'all' && p.suburb !== suburbFilter) return false;
+    if (cityFilter !== 'all' && p.city !== cityFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       const landlord = landlords.find((l) => l.id === p.landlord_id);
-      const haystack = [p.address, p.suburb, p.state, p.postcode, p.property_type, landlord ? `${landlord.first_name} ${landlord.last_name}` : '']
+      const haystack = [p.address, p.city, p.district, p.tole, p.property_type, landlord ? `${landlord.first_name} ${landlord.last_name}` : '']
         .filter(Boolean).join(' ').toLowerCase();
       if (!haystack.includes(q)) return false;
     }
@@ -76,7 +77,7 @@ export function PropertiesPage() {
   });
 
   function clearFilters() {
-    setSearch(''); setStatusFilter('all'); setSuburbFilter('all');
+    setSearch(''); setStatusFilter('all'); setCityFilter('all');
   }
 
   if (selectedProperty) {
@@ -101,9 +102,9 @@ export function PropertiesPage() {
             <button
               onClick={() => exportToCsv('properties.csv', [
                 { header: 'Address', value: (p) => p.address },
-                { header: 'Suburb', value: (p) => p.suburb },
-                { header: 'State', value: (p) => p.state },
-                { header: 'Postcode', value: (p) => p.postcode },
+                { header: 'City', value: (p) => p.city ?? '' },
+                { header: 'District', value: (p) => p.district ?? '' },
+                { header: 'Tole', value: (p) => p.tole ?? '' },
                 { header: 'Type', value: (p) => p.property_type },
                 { header: 'Category', value: (p) => p.property_category },
                 { header: 'Aspect', value: (p) => p.property_aspect },
@@ -158,13 +159,13 @@ export function PropertiesPage() {
         <SearchToolbar
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search address, suburb, landlord..."
+          searchPlaceholder="Search address, city, landlord..."
           statusFilters={statusOptions}
           statusValue={statusFilter}
           onStatusChange={setStatusFilter}
-          suburbFilters={suburbOptions}
-          suburbValue={suburbFilter}
-          onSuburbChange={setSuburbFilter}
+          cityFilters={cityOptions}
+          cityValue={cityFilter}
+          onCityChange={setCityFilter}
           resultCount={filtered.length}
           onClear={clearFilters}
         />
@@ -203,7 +204,7 @@ export function PropertiesPage() {
                 </div>
                 <div className="min-w-0 flex-1 p-4">
                   <div className="mb-1 flex items-start justify-between gap-2"><h3 className="truncate text-sm font-semibold text-slate-800">{prop.address}</h3><Badge color={statusColor(prop.status)} variant="light">{prop.status}</Badge></div>
-                  <p className="mb-3 flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5" />{[prop.suburb, prop.state, prop.postcode].filter(Boolean).join(', ') || 'No location set'}</p>
+                  <p className="mb-3 flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5" />{[prop.city, prop.district, prop.tole].filter(Boolean).join(', ') || 'No location set'}</p>
                   <div className="flex items-center gap-3 text-xs text-slate-500"><span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" />{prop.bedrooms}</span><span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{prop.bathrooms}</span><span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" />{prop.parking}</span></div>
                   {landlord && <div className="mt-3 border-t border-slate-100 pt-3 text-xs text-slate-500">Managed for <span className="font-medium text-slate-700">{landlord.first_name} {landlord.last_name}</span></div>}
                 </div>
@@ -242,9 +243,9 @@ function PropertyForm({
 }) {
   const [form, setForm] = useState({
     address: property?.address ?? '',
-    suburb: property?.suburb ?? '',
-    state: property?.state ?? '',
-    postcode: property?.postcode ?? '',
+    city: property?.city ?? '',
+    district: property?.district ?? '',
+    tole: property?.tole ?? '',
     property_type: property?.property_type ?? 'house',
     status: property?.status ?? 'vacant',
     bedrooms: property?.bedrooms ?? 0,
@@ -294,9 +295,9 @@ function PropertyForm({
     const payload = {
       agency_id: agencyId,
       address: form.address,
-      suburb: form.suburb || null,
-      state: form.state || null,
-      postcode: form.postcode || null,
+      city: form.city || null,
+      district: form.district || null,
+      tole: form.tole || null,
       property_type: form.property_type,
       status: form.status,
       bedrooms: Number(form.bedrooms),
@@ -368,18 +369,24 @@ function PropertyForm({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Suburb</label>
-            <input value={form.suburb} onChange={(e) => set('suburb', e.target.value)} className={inputCls} />
+            <label className={labelCls}>City</label>
+            <input list="nepal-cities" value={form.city} onChange={(e) => set('city', e.target.value)} className={inputCls} placeholder="Kathmandu" />
+            <datalist id="nepal-cities">
+              {NEPAL_CITIES.map((c) => <option key={c} value={c} />)}
+            </datalist>
           </div>
           <div>
-            <label className={labelCls}>State</label>
-            <input value={form.state} onChange={(e) => set('state', e.target.value)} className={inputCls} placeholder="NSW" />
+            <label className={labelCls}>District</label>
+            <input list="nepal-districts" value={form.district} onChange={(e) => set('district', e.target.value)} className={inputCls} placeholder="Kathmandu" />
+            <datalist id="nepal-districts">
+              {NEPAL_DISTRICTS.map((d) => <option key={d} value={d} />)}
+            </datalist>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Postcode</label>
-            <input value={form.postcode} onChange={(e) => set('postcode', e.target.value)} className={inputCls} placeholder="2000" />
+            <label className={labelCls}>Tole / Area</label>
+            <input value={form.tole} onChange={(e) => set('tole', e.target.value)} className={inputCls} placeholder="e.g. Thamel, Baneshwor" />
           </div>
           <div>
             <label className={labelCls}>Property Type</label>

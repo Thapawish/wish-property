@@ -1,7 +1,7 @@
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-AU', {
+  return new Intl.NumberFormat('en-NP', {
     style: 'currency',
-    currency: 'AUD',
+    currency: 'NPR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -9,7 +9,7 @@ export function formatCurrency(amount: number): string {
 
 export function formatDate(date: string | null): string {
   if (!date) return '—';
-  return new Intl.DateTimeFormat('en-AU', {
+  return new Intl.DateTimeFormat('en-NP', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

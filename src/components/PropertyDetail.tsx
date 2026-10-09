@@ -175,7 +175,7 @@ export function PropertyDetail({
                 <Badge color={statusColor(property.status)} variant="light">{property.status}</Badge>
               </div>
               <p className="text-slate-600 text-sm">
-                {[property.suburb, property.state, property.postcode].filter(Boolean).join(', ') || 'No location set'}
+                {[property.city, property.district, property.tole].filter(Boolean).join(', ') || 'No location set'}
               </p>
             </div>
           </div>
