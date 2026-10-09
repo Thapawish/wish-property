@@ -339,7 +339,7 @@ function TeamMembersSection({ isAdmin }: { isAdmin: boolean }) {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(m.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                  <td className="px-4 py-3 text-slate-500">{new Date(m.created_at).toLocaleDateString('en-NP', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                   {isAdmin && (
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">

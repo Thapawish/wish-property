@@ -102,7 +102,7 @@ export function PaymentsPage() {
       const q = search.toLowerCase();
       const lease = leases.find((l) => l.id === p.lease_id);
       const prop = lease ? properties.find((pr) => pr.id === lease.property_id) : null;
-      const haystack = [prop?.address, prop?.suburb, p.reference, p.method].filter(Boolean).join(' ').toLowerCase();
+      const haystack = [prop?.address, prop?.city, p.reference, p.method].filter(Boolean).join(' ').toLowerCase();
       if (!haystack.includes(q)) return false;
     }
     return true;
@@ -132,7 +132,7 @@ export function PaymentsPage() {
             <button
               onClick={() => exportToCsv('payments.csv', [
                 { header: 'Property', value: (p) => { const lease = leases.find((l) => l.id === p.lease_id); const prop = lease ? properties.find((pr) => pr.id === lease.property_id) : null; return prop?.address ?? ''; } },
-                { header: 'Suburb', value: (p) => { const lease = leases.find((l) => l.id === p.lease_id); const prop = lease ? properties.find((pr) => pr.id === lease.property_id) : null; return prop?.suburb ?? ''; } },
+                { header: 'City', value: (p) => { const lease = leases.find((l) => l.id === p.lease_id); const prop = lease ? properties.find((pr) => pr.id === lease.property_id) : null; return prop?.city ?? ''; } },
                 { header: 'Due Date', value: (p) => p.due_date },
                 { header: 'Amount', value: (p) => p.amount },
                 { header: 'Status', value: (p) => p.status },
@@ -338,7 +338,7 @@ function PaymentForm({ leases, properties, agencyId, onClose, onSaved }: { lease
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Amount ($)</label>
+            <label className={labelCls}>Amount (Rs)</label>
             <input type="number" min="0" step="0.01" required value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} className={inputCls} />
           </div>
           <div>

@@ -152,7 +152,7 @@ export function MaintenancePage() {
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-emerald-400" />
                       <span className="text-slate-300 text-sm font-medium">
-                        {new Date(b.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(b.created_at).toLocaleDateString('en-NP', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                     <Badge color="green">{b.status}</Badge>
@@ -196,7 +196,7 @@ export function MaintenancePage() {
                     <span className="text-white font-medium text-sm">{entry.version}</span>
                     {entry.breaking && <Badge color="red">Breaking</Badge>}
                     <span className="text-slate-500 text-xs">
-                      {new Date(entry.released_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(entry.released_at).toLocaleDateString('en-NP', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
                   <p className="text-slate-400 text-sm mb-2">{entry.summary}</p>

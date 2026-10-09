@@ -128,7 +128,7 @@ export function CalendarPage() {
 
   if (loading) return <div className="min-h-full bg-[#f4f5f7] -m-4 p-4 lg:-m-8 lg:p-8"><div className="mx-auto max-w-[1500px]"><Skeleton variant="light" /></div></div>;
 
-  const monthLabel = currentMonth.toLocaleString('en-AU', { month: 'long', year: 'numeric' });
+  const monthLabel = currentMonth.toLocaleString('en-NP', { month: 'long', year: 'numeric' });
   const typeCounts = events.reduce((acc, ev) => {
     acc[ev.type] = (acc[ev.type] ?? 0) + 1;
     return acc;

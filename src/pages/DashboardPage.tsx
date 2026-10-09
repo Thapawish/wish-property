@@ -104,7 +104,7 @@ export function DashboardPage() {
           return due.getMonth() === date.getMonth() && due.getFullYear() === date.getFullYear();
         });
         arrearsTrend.push({
-          month: date.toLocaleString('en-AU', { month: 'short' }),
+          month: date.toLocaleString('en-NP', { month: 'short' }),
           arrears: monthPayments.filter((payment) => payment.status === 'overdue').reduce((total, payment) => total + Number(payment.amount), 0),
         });
       }

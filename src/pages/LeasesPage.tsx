@@ -60,7 +60,7 @@ export function LeasesPage() {
       const q = search.toLowerCase();
       const prop = properties.find((p) => p.id === l.property_id);
       const tenant = tenants.find((t) => t.id === l.tenant_id);
-      const haystack = [prop?.address, prop?.suburb, tenant ? `${tenant.first_name} ${tenant.last_name}` : '']
+      const haystack = [prop?.address, prop?.city, tenant ? `${tenant.first_name} ${tenant.last_name}` : '']
         .filter(Boolean).join(' ').toLowerCase();
       if (!haystack.includes(q)) return false;
     }
@@ -81,7 +81,7 @@ export function LeasesPage() {
             <button
               onClick={() => exportToCsv('leases.csv', [
                 { header: 'Property', value: (l) => properties.find((p) => p.id === l.property_id)?.address ?? '' },
-                { header: 'Suburb', value: (l) => properties.find((p) => p.id === l.property_id)?.suburb ?? '' },
+                { header: 'City', value: (l) => properties.find((p) => p.id === l.property_id)?.city ?? '' },
                 { header: 'Tenant', value: (l) => { const t = tenants.find((x) => x.id === l.tenant_id); return t ? `${t.first_name} ${t.last_name}` : ''; } },
                 { header: 'Start Date', value: (l) => l.start_date },
                 { header: 'End Date', value: (l) => l.end_date },
@@ -152,7 +152,7 @@ export function LeasesPage() {
                     <tr key={lease.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition group">
                       <td className="px-5 py-4">
                         <p className="text-slate-200 text-sm font-medium">{prop?.address ?? 'Unknown'}</p>
-                        <p className="text-slate-500 text-xs">{prop?.suburb}</p>
+                        <p className="text-slate-500 text-xs">{prop?.city}</p>
                       </td>
                       <td className="px-5 py-4 text-slate-300 text-sm">{tenant ? `${tenant.first_name} ${tenant.last_name}` : '—'}</td>
                       <td className="px-5 py-4 text-slate-400 text-sm">
@@ -255,7 +255,7 @@ function LeaseForm({ lease, properties, tenants, agencyId, onClose, onSaved }: {
           <label className={labelCls}>Property</label>
           <select required value={form.property_id} onChange={(e) => set('property_id', e.target.value)} className={inputCls}>
             <option value="">Select property</option>
-            {properties.map((p) => <option key={p.id} value={p.id}>{p.address}, {p.suburb}</option>)}
+            {properties.map((p) => <option key={p.id} value={p.id}>{p.address}, {p.city}</option>)}
           </select>
         </div>
         <div>
@@ -277,11 +277,11 @@ function LeaseForm({ lease, properties, tenants, agencyId, onClose, onSaved }: {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Rent Amount ($)</label>
+            <label className={labelCls}>Rent Amount (Rs)</label>
             <input type="number" min="0" step="0.01" required value={form.rent_amount} onChange={(e) => set('rent_amount', Number(e.target.value))} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Bond ($)</label>
+            <label className={labelCls}>Bond (Rs)</label>
             <input type="number" min="0" step="0.01" value={form.bond_amount} onChange={(e) => set('bond_amount', Number(e.target.value))} className={inputCls} />
           </div>
         </div>

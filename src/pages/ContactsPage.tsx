@@ -280,8 +280,8 @@ function ContactForm({ contact, agencyId, onClose, onSaved }: { contact: Contact
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>BSB</label>
-                <input value={form.bank_bsb} onChange={(e) => setForm({ ...form, bank_bsb: e.target.value })} className={inputCls} placeholder="062-000" />
+                <label className={labelCls}>Branch Code</label>
+                <input value={form.bank_bsb} onChange={(e) => setForm({ ...form, bank_bsb: e.target.value })} className={inputCls} placeholder="e.g. NABBL" />
               </div>
               <div>
                 <label className={labelCls}>Account Number</label>
